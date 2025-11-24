@@ -63,10 +63,10 @@ func (h *DashboardHandler) getDashboardStats() (*models.DashboardStats, error) {
     }
     
     // Total videos
-    err = h.db.QueryRow("SELECT COUNT(*) FROM videos").Scan(&stats.TotalVideos)
-    if err != nil {
-        return nil, err
-    }
+    //err = h.db.QueryRow("SELECT COUNT(*) FROM videos").Scan(&stats.TotalVideos)
+    //if err != nil {
+    //    return nil, err
+    //}
     
     // Total revenue - используем правильные колонки из таблицы finance
     // В вашей БД finance имеет колонки: amount_views, amount_clicks, Amount (integer)

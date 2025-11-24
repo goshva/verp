@@ -35,6 +35,7 @@ vend_erp/
 ## Технологии
 
 - **Backend**: Go 1.21+
+- **PGSQL** : 17
 - **Frontend**: HTMX, Hyperscript
 - **Database**: PostgreSQL
 - **Templates**: Go HTML templates
@@ -46,3 +47,9 @@ vend_erp/
 - `make dev` - запуск в режиме разработки
 - `make db-test` - тест подключения к БД
 - `make install-deps` - установка зависимостей
+
+- `sudo -u postgres psql`
+# In PostgreSQL console:
+`CREATE USER venderp WITH PASSWORD 'password';`
+`CREATE DATABASE venderp OWNER venderp;`
+`\q`

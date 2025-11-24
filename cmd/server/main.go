@@ -1,52 +1,76 @@
 package main
 
 import (
-    "database/sql"
     "fmt"
     "log"
     "net/http"
-    "vend_erp/internal/config"
+    
+    // Import your local packages
+    "vend_erp/config"
     "vend_erp/internal/handlers"
+    "vend_erp/migrations"
 
     _ "github.com/lib/pq"
 )
 
 func main() {
-    // Load environment variables from .env file
-    if err := config.LoadEnv(); err != nil {
-        log.Printf("Warning: Could not load .env file: %v", err)
-    }
-    
+    // Load configuration
     cfg := config.LoadConfig()
     
-    // Подключение к БД
-    connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-        cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword, cfg.DBName)
-    
-    db, err := sql.Open("postgres", connStr)
+    // Connect to database
+    db, err := config.ConnectDB(cfg)
     if err != nil {
-        log.Fatal("Database connection failed:", err)
+        log.Fatalf("Failed to connect to database: %v", err)
     }
     defer db.Close()
-    
-    // Проверка подключения
-    err = db.Ping()
-    if err != nil {
-        log.Fatal("Database ping failed:", err)
+
+    log.Printf("Database connected successfully!")
+
+    // Run migrations from migrations folder
+    migrationsPath := "./migrations"
+    if err := migrations.RunMigrations(db, migrationsPath); err != nil {
+        log.Fatalf("Failed to run migrations: %v", err)
     }
-    
-    fmt.Println("✅ Successfully connected to database")
-    
+
+    // Setup routes using handlers
     mux := http.NewServeMux()
+    
+    // Setup your existing routes
     handlers.SetupRoutes(mux, db)
+
+    // Add a simple health check route
+    mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+        // Check database connection
+        err := db.Ping()
+        if err != nil {
+            http.Error(w, "Database connection failed", http.StatusInternalServerError)
+            return
+        }
+        
+        // Check if migrations table exists (indicates successful migrations)
+        var migrationCount int
+        err = db.QueryRow("SELECT COUNT(*) FROM schema_migrations").Scan(&migrationCount)
+        if err != nil {
+            http.Error(w, "Migrations not properly applied", http.StatusInternalServerError)
+            return
+        }
+        
+        fmt.Fprintf(w, `{
+            "status": "healthy",
+            "database": "connected",
+            "migrations_applied": %d,
+            "database_name": "%s"
+        }`, migrationCount, cfg.DBName)
+    })
+
+    // Start server
+    port := ":8080"
+    log.Printf("🚀 Vend ERP Server starting on http://localhost%s", port)
+    log.Printf("📊 Database: %s@%s:%d/%s", cfg.DBUser, cfg.DBHost, cfg.DBPort, cfg.DBName)
+    log.Printf("🗃️  Migrations applied from: %s", migrationsPath)
+    log.Printf("🔧 Health check: http://localhost%s/health", port)
     
-    fmt.Printf("🚀 Server starting on %s\n", cfg.ServerAddress)
-    fmt.Println("📊 Available routes:")
-    fmt.Println("  GET  /dashboard")
-    fmt.Println("  GET  /users")
-    fmt.Println("  GET  /machines") 
-    fmt.Println("  GET  /locations")
-    fmt.Println("  GET  /api/stats")
-    
-    log.Fatal(http.ListenAndServe(cfg.ServerAddress, mux))
+    if err := http.ListenAndServe(port, mux); err != nil {
+        log.Fatalf("Server failed to start: %v", err)
+    }
 }
