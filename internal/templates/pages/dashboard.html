@@ -1,0 +1,56 @@
+{{ define "dashboard.html" }}
+{{ template "base.html" . }}
+{{ end }}
+
+{{ define "content" }}
+<div class="header" style="margin-bottom: 2rem;">
+    <h1>📊 Панель управления VendERP</h1>
+    <p style="color: var(--secondary); margin-top: 0.5rem;">Система управления вендинговыми автоматами</p>
+</div>
+
+<div class="stats-grid" id="stats-grid" hx-get="/api/stats" hx-trigger="load">
+    {{ template "stat_card" dict "Label" "Всего автоматов" "Value" "-" }}
+    {{ template "stat_card" dict "Label" "Активные автоматы" "Value" "-" }}
+    {{ template "stat_card" dict "Label" "Всего пользователей" "Value" "-" }}
+    {{ template "stat_card" dict "Label" "Всего локаций" "Value" "-" }}
+    {{ template "stat_card" dict "Label" "Общая выручка" "Value" "-" }}
+    {{ template "stat_card" dict "Label" "Ожидающие задачи" "Value" "-" }}
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+    {{ template "card" dict 
+        "Title" "Последние пользователи"
+        "Content" `<div id="recent-users" hx-get="/users" hx-trigger="load" hx-target="this">Загрузка...</div>`
+    }}
+    
+    {{ template "card" dict 
+        "Title" "Последние автоматы"
+        "Content" `<div id="recent-machines" hx-get="/machines" hx-trigger="load" hx-target="this">Загрузка...</div>`
+    }}
+</div>
+
+{{ template "card" dict 
+    "Title" "📍 Активные локации"
+    "Content" `
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3>📍 Активные локации</h3>
+        <button class="btn btn-primary"
+                hx-get="/locations/form"
+                hx-target="#modal-body"
+                onclick="VendERP.showModal()">
+            ➕ Добавить локацию
+        </button>
+    </div>
+    <div id="locations-table" hx-get="/locations" hx-trigger="load">
+        Загрузка локаций...
+    </div>`
+}}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        setInterval(() => {
+            htmx.ajax('GET', '/api/stats', { target: '#stats-grid' });
+        }, 30000);
+    });
+</script>
+{{ end }}

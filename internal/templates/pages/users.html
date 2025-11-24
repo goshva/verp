@@ -1,0 +1,19 @@
+{{ define "users.html" }}
+{{ template "base.html" . }}
+{{ end }}
+
+{{ define "content" }}
+    {{ template "page_header" dict 
+        "Icon" "👥" 
+        "Title" "Управление пользователями" 
+        "ShowAddButton" true
+        "AddURL" "/users/form"
+        "AddButtonText" "Добавить пользователя"
+    }}
+
+    <div class="card">
+        <div id="users-table">
+            {{ template "users_list.html" . }}
+        </div>
+    </div>
+{{ end }}

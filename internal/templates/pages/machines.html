@@ -1,0 +1,19 @@
+{{ define "machines.html" }}
+{{ template "base.html" . }}
+{{ end }}
+
+{{ define "content" }}
+    {{ template "page_header" dict 
+        "Icon" "🤖" 
+        "Title" "Управление автоматами" 
+        "ShowAddButton" true
+        "AddURL" "/machines/form"
+        "AddButtonText" "Добавить автомат"
+    }}
+
+    <div class="card">
+        <div id="machines-table">
+            {{ template "machines_list.html" . }}
+        </div>
+    </div>
+{{ end }}

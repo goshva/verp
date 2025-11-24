@@ -1,0 +1,26 @@
+{{ define "form_field" }}
+<div class="form-group">
+    <label class="form-label" for="{{.ID}}">{{.Label}}{{if .Required}} *{{end}}</label>
+    {{if eq .Type "select"}}
+    <select class="form-select" id="{{.ID}}" name="{{.Name}}" {{if .Required}}required{{end}}>
+        <option value="">Выберите...</option>
+        {{range .Options}}
+        <option value="{{.Value}}" {{if .Selected}}selected{{end}}>{{.Text}}</option>
+        {{end}}
+    </select>
+    {{else if eq .Type "textarea"}}
+    <textarea class="form-textarea" id="{{.ID}}" name="{{.Name}}"
+              {{if .Required}}required{{end}}
+              {{if .Placeholder}}placeholder="{{.Placeholder}}"{{end}}
+              {{if .Rows}}rows="{{.Rows}}"{{end}}>{{.Value}}</textarea>
+    {{else}}
+    <input type="{{.Type}}" class="form-input" id="{{.ID}}" name="{{.Name}}"
+           value="{{.Value}}"
+           {{if .Required}}required{{end}}
+           {{if .Placeholder}}placeholder="{{.Placeholder}}"{{end}}>
+    {{end}}
+    {{if .HelpText}}
+    <div class="form-help">{{.HelpText}}</div>
+    {{end}}
+</div>
+{{ end }}
