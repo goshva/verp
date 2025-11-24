@@ -12,6 +12,30 @@
     <link rel="stylesheet" href="/static/css/styles.css">
 </head>
 <body>
+    <header class="header">
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="logo">
+                <h1>{{.Title}}</h1>
+            </div>
+            <nav class="nav">
+                {{if .User}}
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <span>Привет, {{.User.Username}} ({{.User.UserRole}})</span>
+                    <form method="POST" action="/auth/signout" style="margin: 0;">
+                        <button type="submit" class="btn btn-secondary">Выйти</button>
+                    </form>
+                </div>
+                {{else}}
+                <div style="display: flex; gap: 0.5rem;">
+                    <a href="/auth/signin" class="btn btn-secondary">Войти</a>
+                    <a href="/auth/signup" class="btn btn-primary">Регистрация</a>
+                </div>
+                {{end}}
+            </nav>
+        </div>
+    </div>
+</header>
     {{ template "sidebar" . }}
     
     <div class="main-content">
