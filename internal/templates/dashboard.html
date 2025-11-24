@@ -1,0 +1,77 @@
+{{ define "dashboard.html" }}
+{{ template "base.html" . }}
+{{ end }}
+
+{{ define "content" }}
+<div class="header" style="margin-bottom: 2rem;">
+    <h1>📊 Панель управления VendERP</h1>
+    <p style="color: var(--secondary); margin-top: 0.5rem;">Система управления вендинговыми автоматами</p>
+</div>
+
+<div class="stats-grid" id="stats-grid" hx-get="/api/stats" hx-trigger="load">
+    <div class="stat-card">
+        <div class="stat-label">Всего автоматов</div>
+        <div class="stat-number">-</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Активные автоматы</div>
+        <div class="stat-number">-</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Всего пользователей</div>
+        <div class="stat-number">-</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Всего локаций</div>
+        <div class="stat-number">-</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Общая выручка</div>
+        <div class="stat-number">-</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Ожидающие задачи</div>
+        <div class="stat-number">-</div>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+    <div class="card">
+        <h3>Последние пользователи</h3>
+        <div id="recent-users" hx-get="/users" hx-trigger="load" hx-target="this">
+            Загрузка...
+        </div>
+    </div>
+    
+    <div class="card">
+        <h3>Последние автоматы</h3>
+        <div id="recent-machines" hx-get="/machines" hx-trigger="load" hx-target="this">
+            Загрузка...
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3>📍 Активные локации</h3>
+        <button class="btn btn-primary" 
+                hx-get="/locations/form" 
+                hx-target="#modal-body"
+                onclick="showModal()">
+            ➕ Добавить локацию
+        </button>
+    </div>
+    <div id="locations-table" hx-get="/locations" hx-trigger="load">
+        Загрузка локаций...
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Автоматическое обновление статистики каждые 30 секунд
+        setInterval(() => {
+            htmx.ajax('GET', '/api/stats', { target: '#stats-grid' });
+        }, 30000);
+    });
+</script>
+{{ end }}

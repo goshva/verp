@@ -1,0 +1,106 @@
+{{ define "machines_list.html" }}
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Серийный номер</th>
+            <th>Модель</th>
+            <th>Локация</th>
+            <th>Статус</th>
+            <th>Игрушки</th>
+            <th>Вместимость</th>
+            <th>Наличные</th>
+            <th>Последнее обслуживание</th>
+            <th>Следующее обслуживание</th>
+            <th>Установка</th>
+            <th>Создан</th>
+            <th>Обновлен</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{range .Machines}}
+        <tr>
+            <td>{{.ID}}</td>
+            <td>{{.SerialNumber}}</td>
+            <td>{{.Model}}</td>
+            <td>{{.LocationName}}</td>
+            <td>
+                <span class="status-badge 
+                    {{if eq .Status "active"}}status-active
+                    {{else if eq .Status "maintenance"}}status-pending
+                    {{else}}status-inactive{{end}}">
+                    {{.Status}}
+                </span>
+            </td>
+            <td>{{.CurrentToysCount}}</td>
+            <td>{{.CapacityToys}}</td>
+            <td>{{printf "%.2f" .CashAmount}} ₽</td>
+            <td>
+                {{if .LastMaintenanceDate.IsZero}}
+                    <span style="color: var(--secondary);">Не обслуживался</span>
+                {{else}}
+                    {{.LastMaintenanceDate.Format "02.01.2006"}}
+                {{end}}
+            </td>
+            <td>
+                {{if .NextMaintenanceDate.IsZero}}
+                    <span style="color: var(--secondary);">Не назначено</span>
+                {{else}}
+                    {{.NextMaintenanceDate.Format "02.01.2006"}}
+                {{end}}
+            </td>
+            <td>
+                {{if .InstallationDate.IsZero}}
+                    <span style="color: var(--secondary);">Не установлен</span>
+                {{else}}
+                    {{.InstallationDate.Format "02.01.2006"}}
+                {{end}}
+            </td>
+            <td>
+                {{if .CreatedAt.IsZero}}
+                    <span style="color: var(--secondary);">-</span>
+                {{else}}
+                    {{.CreatedAt.Format "02.01.2006"}}
+                {{end}}
+            </td>
+            <td>
+                {{if .UpdatedAt.IsZero}}
+                    <span style="color: var(--secondary);">-</span>
+                {{else}}
+                    {{.UpdatedAt.Format "02.01.2006 15:04"}}
+                {{end}}
+            </td>
+            <td>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn btn-primary" 
+                            hx-get="/machines/form?id={{.ID}}"
+                            hx-target="#modal-body"
+                            onclick="showModal()">
+                        ✏️
+                    </button>
+                    <button class="btn btn-danger" 
+                            hx-delete="/machines/delete?id={{.ID}}"
+                            hx-target="#machines-table"
+                            hx-confirm="Удалить автомат?">
+                        🗑️
+                    </button>
+                </div>
+            </td>
+        </tr>
+        {{else}}
+        <tr>
+            <td colspan="14" style="text-align: center; padding: 2rem; color: var(--secondary);">
+                Нет автоматов. 
+                <button class="btn btn-primary" 
+                        hx-get="/machines/form" 
+                        hx-target="#modal-body"
+                        onclick="showModal()">
+                    ➕ Добавить первый автомат
+                </button>
+            </td>
+        </tr>
+        {{end}}
+    </tbody>
+</table>
+{{ end }}

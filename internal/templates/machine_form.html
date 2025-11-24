@@ -1,0 +1,89 @@
+{{ define "machine_form.html" }}
+<form hx-post="/machines/save" hx-target="#machines-table">
+    <input type="hidden" name="id" value="{{.Machine.ID}}">
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+            <label class="form-label">Серийный номер</label>
+            <input type="text" name="serial_number" value="{{.Machine.SerialNumber}}" class="form-input" required>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Модель</label>
+            <input type="text" name="model" value="{{.Machine.Model}}" class="form-input" required>
+        </div>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+            <label class="form-label">Локация</label>
+            <select name="location_id" class="form-select" required>
+                <option value="">Выберите локацию</option>
+                {{range .Locations}}
+                <option value="{{.ID}}" {{if eq .ID $.Machine.LocationID}}selected{{end}}>
+                    {{.Name}} - {{.Address}}
+                </option>
+                {{end}}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Статус</label>
+            <select name="status" class="form-select" required>
+                <option value="active" {{if eq .Machine.Status "active"}}selected{{end}}>Активен</option>
+                <option value="maintenance" {{if eq .Machine.Status "maintenance"}}selected{{end}}>Обслуживание</option>
+                <option value="inactive" {{if eq .Machine.Status "inactive"}}selected{{end}}>Неактивен</option>
+            </select>
+        </div>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+            <label class="form-label">Вместимость игрушек</label>
+            <input type="number" name="capacity_toys" value="{{.Machine.CapacityToys}}" class="form-input" min="0">
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Текущее кол-во игрушек</label>
+            <input type="number" name="current_toys_count" value="{{.Machine.CurrentToysCount}}" class="form-input" min="0">
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Наличные (₽)</label>
+            <input type="number" step="0.01" name="cash_amount" value="{{.Machine.CashAmount}}" class="form-input" min="0">
+        </div>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+            <label class="form-label">Дата последнего обслуживания</label>
+            <input type="date" name="last_maintenance_date" value="{{if not .Machine.LastMaintenanceDate.IsZero}}{{.Machine.LastMaintenanceDate.Format "2006-01-02"}}{{end}}" class="form-input">
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Дата следующего обслуживания</label>
+            <input type="date" name="next_maintenance_date" value="{{if not .Machine.NextMaintenanceDate.IsZero}}{{.Machine.NextMaintenanceDate.Format "2006-01-02"}}{{end}}" class="form-input">
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Дата установки</label>
+            <input type="date" name="installation_date" value="{{if not .Machine.InstallationDate.IsZero}}{{.Machine.InstallationDate.Format "2006-01-02"}}{{end}}" class="form-input">
+        </div>
+    </div>
+    
+    <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
+        <button type="button" class="btn" _="on click trigger close">Отмена</button>
+        <button type="submit" class="btn btn-primary">
+            {{if .Edit}}Обновить{{else}}Создать{{end}}
+        </button>
+    </div>
+</form>
+
+<script>
+    document.addEventListener('htmx:afterSwap', function(evt) {
+        if (evt.detail.target.id === 'machines-table') {
+            document.getElementById('modal').close();
+        }
+    });
+</script>
+{{ end }}

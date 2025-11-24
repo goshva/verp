@@ -1,0 +1,33 @@
+root = "."
+tmp_dir = "tmp"
+
+[build]
+  cmd = "go build -o ./tmp/main ./cmd/server"
+  bin = "./tmp/main"
+  full_bin = "./tmp/main"
+  include_ext = ["go", "html", "tpl", "tmpl"]
+  include_dir = ["cmd", "internal", "pkg", "templates"]
+  exclude_dir = ["tmp", "vendor", "testdata", "bin", "node_modules"]
+  exclude_regex = ["_test\\.go"]
+  delay = 1000
+  stop_on_root = false
+  send_interrupt = true
+  kill_delay = "1s"
+
+[log]
+  main_only = false
+  time = true
+
+[color]
+  app = "cyan"
+  build = "yellow"
+  main = "magenta"
+  runner = "green"
+  watcher = "cyan"
+
+[misc]
+  clean_on_exit = true
+
+[screen]
+  clear_on_rebuild = false
+  keep_scroll = true

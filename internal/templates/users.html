@@ -1,0 +1,21 @@
+{{ define "users.html" }}
+{{ template "base.html" . }}
+{{ end }}
+
+{{ define "content" }}
+<div class="header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h1>👥 Управление пользователями</h1>
+    <button class="btn btn-primary" 
+            hx-get="/users/form" 
+            hx-target="#modal-body"
+            onclick="showModal()">
+        ➕ Добавить пользователя
+    </button>
+</div>
+
+<div class="card">
+    <div id="users-table">
+        {{ template "users_list.html" . }}
+    </div>
+</div>
+{{ end }}
