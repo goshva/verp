@@ -98,4 +98,6 @@ func SetupRoutes(mux *http.ServeMux, db *sql.DB) {
     fmt.Println("  GET  /machines")
     fmt.Println("  GET  /locations")
     fmt.Println("  GET  /api/stats")
+    fmt.Println("  POST /locations/save") // Добавьте это
+
 }

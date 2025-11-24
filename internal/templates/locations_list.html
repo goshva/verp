@@ -30,13 +30,13 @@
             </td>
             <td>
                 <div style="display: flex; gap: 0.5rem;">
-                    <button class="btn btn-primary" 
+                    <button class="btn btn-primary"
                             hx-get="/locations/form?id={{.ID}}"
                             hx-target="#modal-body"
-                            _="on htmx:afterOnLoad call #modal.showModal()">
+                            onclick="showModal()">
                         ✏️
                     </button>
-                    <button class="btn btn-danger" 
+                    <button class="btn btn-danger"
                             hx-delete="/locations/delete?id={{.ID}}"
                             hx-target="#locations-table"
                             hx-confirm="Удалить локацию?">
@@ -48,7 +48,13 @@
         {{else}}
         <tr>
             <td colspan="9" style="text-align: center; padding: 2rem; color: var(--secondary);">
-                Нет локаций. <a href="#" hx-get="/locations/form" hx-target="#modal-body">Добавить первую локацию</a>
+                Нет локаций. 
+                <button class="btn btn-primary"
+                        hx-get="/locations/form"
+                        hx-target="#modal-body"
+                        onclick="showModal()">
+                    ➕ Добавить первую локацию
+                </button>
             </td>
         </tr>
         {{end}}

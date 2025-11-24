@@ -1,8 +1,8 @@
+
 package handlers
 
 import (
     "database/sql"
-    "fmt"
     "net/http"
     "strconv"
     "vend_erp/internal/models"
@@ -17,14 +17,6 @@ func NewLocationHandler(db *sql.DB) *LocationHandler {
 }
 
 func (h *LocationHandler) ListLocations(w http.ResponseWriter, r *http.Request) {
-    // Явная проверка URL
-    if r.URL.Path != "/locations" {
-        http.Error(w, "Not found", http.StatusNotFound)
-        return
-    }
-    
-    fmt.Println("DEBUG: ListLocations called for path:", r.URL.Path)
-    
     rows, err := h.db.Query(`
         SELECT id, name, address, contact_person, contact_phone, 
                monthly_rent, rent_due_day, is_active
@@ -53,7 +45,7 @@ func (h *LocationHandler) ListLocations(w http.ResponseWriter, r *http.Request) 
     data := map[string]interface{}{
         "Locations": locations,
         "Active":    "locations",
-        "Title":     "Локации",
+		"Title":     "Локации",
     }
     
     if r.Header.Get("HX-Request") == "true" {
@@ -128,8 +120,7 @@ func (h *LocationHandler) SaveLocation(w http.ResponseWriter, r *http.Request) {
         _, err = h.db.Exec(`
             UPDATE locations 
             SET name=$1, address=$2, contact_person=$3, contact_phone=$4,
-                monthly_rent=$5, rent_due_day=$6, is_active=$7,
-                updated_at=CURRENT_TIMESTAMP
+                monthly_rent=$5, rent_due_day=$6, is_active=$7
             WHERE id=$8
         `, location.Name, location.Address, location.ContactPerson,
            location.ContactPhone, location.MonthlyRent, location.RentDueDay, 
