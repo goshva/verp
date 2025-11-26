@@ -1,0 +1,12 @@
+{{ define "sidebar" }}
+<div class="sidebar">
+    <h2 style="margin-bottom: 2rem; color: var(--primary);">VendERP</h2>
+    <nav>
+        <a href="/locations" class="nav-link {{if eq .Active " locations"}}active{{end}}">📍 Локации</a>
+        <a href="/machines" class="nav-link {{if eq .Active " machines"}}active{{end}}">🤖 Автоматы</a>
+        <a href="/operations" class="nav-link {{if eq .Active " operations_page"}}active{{end}}">📋 Операции</a>
+        <a href="/accounts" class="nav-link {{if eq .Active " users"}}active{{end}}">👥 Пользователи</a>
+
+    </nav>
+</div>
+{{ end }}

@@ -1,0 +1,52 @@
+{{ define "components/theme_toggle.html" }}
+<!-- Theme Toggle Component -->
+<button id="theme-toggle" class="theme-toggle-btn" title="Переключить тему">
+    <span class="theme-toggle-icon">🌙</span>
+    <span class="theme-toggle-text">Тема</span>
+</button>
+
+<style>
+.theme-toggle-btn {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.theme-toggle-btn:hover {
+    background: var(--bg-hover);
+    border-color: var(--primary);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.theme-toggle-icon {
+    font-size: 1rem;
+    transition: transform 0.3s ease;
+}
+
+.theme-toggle-btn:hover .theme-toggle-icon {
+    transform: rotate(180deg);
+}
+
+/* Light theme specific styles */
+body.light-theme .theme-toggle-btn {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+    color: #1e293b;
+}
+
+body.light-theme .theme-toggle-btn:hover {
+    background: #f1f5f9;
+    border-color: #3b82f6;
+}
+</style>
+{{ end }}

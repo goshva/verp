@@ -10,11 +10,12 @@ import (
 )
 
 type AuthHandler struct {
-    db *sql.DB
+    db       *sql.DB
+    renderer *TemplateRenderer
 }
 
-func NewAuthHandler(db *sql.DB) *AuthHandler {
-    return &AuthHandler{db: db}
+func NewAuthHandler(db *sql.DB, renderer *TemplateRenderer) *AuthHandler {
+    return &AuthHandler{db: db, renderer: renderer}
 }
 
 // Session represents a user session
@@ -50,7 +51,7 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
             Title:  "Вход в систему",
             Active: "auth",
         }
-        renderTemplate(w, "auth.html", data)
+        h.renderer.RenderTemplate(w, "auth.html", data)
         return
     }
     
@@ -79,7 +80,7 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
             Title:  "Вход в систему",
             Active: "auth",
         }
-        renderTemplate(w, "auth.html", data)
+        h.renderer.RenderTemplate(w, "auth.html", data)
         return
     }
     
@@ -92,7 +93,7 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
             Title:  "Вход в систему",
             Active: "auth",
         }
-        renderTemplate(w, "auth.html", data)
+        h.renderer.RenderTemplate(w, "auth.html", data)
         return
     }
     
@@ -106,7 +107,7 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
             Title:  "Вход в систему",
             Active: "auth",
         }
-        renderTemplate(w, "auth.html", data)
+        h.renderer.RenderTemplate(w, "auth.html", data)
         return
     }
     
@@ -139,7 +140,7 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
         Secure:   false,
     })
     
-    http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+    http.Redirect(w, r, "/operations", http.StatusSeeOther)
 }
 
 func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
@@ -149,7 +150,7 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
             Title:  "Регистрация",
             Active: "auth",
         }
-        renderTemplate(w, "auth.html", data)
+        h.renderer.RenderTemplate(w, "auth.html", data)
         return
     }
     
@@ -173,7 +174,7 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
             Title:    "Регистрация",
             Active:   "auth",
         }
-        renderTemplate(w, "auth.html", data)
+        h.renderer.RenderTemplate(w, "auth.html", data)
         return
     }
     
@@ -186,7 +187,7 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
             Title:    "Регистрация",
             Active:   "auth",
         }
-        renderTemplate(w, "auth.html", data)
+        h.renderer.RenderTemplate(w, "auth.html", data)
         return
     }
     
@@ -204,7 +205,7 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
             Title:    "Регистрация",
             Active:   "auth",
         }
-        renderTemplate(w, "auth.html", data)
+        h.renderer.RenderTemplate(w, "auth.html", data)
         return
     }
     
@@ -219,7 +220,7 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
             Title:    "Регистрация",
             Active:   "auth",
         }
-        renderTemplate(w, "auth.html", data)
+        h.renderer.RenderTemplate(w, "auth.html", data)
         return
     }
     
@@ -238,14 +239,13 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
             Title:    "Регистрация",
             Active:   "auth",
         }
-        renderTemplate(w, "auth.html", data)
+        h.renderer.RenderTemplate(w, "auth.html", data)
         return
     }
     
     http.Redirect(w, r, "/auth/signin?message=registered", http.StatusSeeOther)
 }
 
-// ... rest of the file remains the same ...
 func (h *AuthHandler) SignOut(w http.ResponseWriter, r *http.Request) {
     cookie, err := r.Cookie("session_id")
     if err == nil {
@@ -320,12 +320,11 @@ func (h *AuthHandler) GetUserFromSession(r *http.Request) (*User, error) {
 
 func (h *AuthHandler) RequireAuth(next http.HandlerFunc) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
-        _, err := h.GetUserFromSession(r)
-        if err != nil {
+        user, err := h.GetUserFromSession(r)
+        if err != nil || user == nil {
             http.Redirect(w, r, "/auth/signin", http.StatusSeeOther)
             return
         }
-        
         next(w, r)
     }
 }

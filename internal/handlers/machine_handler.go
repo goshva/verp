@@ -10,11 +10,12 @@ import (
 )
 
 type MachineHandler struct {
-    db *sql.DB
+    db       *sql.DB
+    renderer *TemplateRenderer
 }
 
-func NewMachineHandler(db *sql.DB) *MachineHandler {
-    return &MachineHandler{db: db}
+func NewMachineHandler(db *sql.DB, renderer *TemplateRenderer) *MachineHandler {
+    return &MachineHandler{db: db, renderer: renderer}
 }
 
 func (h *MachineHandler) ListMachines(w http.ResponseWriter, r *http.Request) {
@@ -86,12 +87,12 @@ func (h *MachineHandler) ListMachines(w http.ResponseWriter, r *http.Request) {
     
     if r.Header.Get("HX-Request") == "true" {
         fmt.Printf("DEBUG: Rendering machines_list.html for HTMX\n")
-        renderTemplate(w, "machines_list.html", data)
+        h.renderer.RenderTemplate(w, "machines_list.html", data)
         return
     }
     
     fmt.Printf("DEBUG: Rendering machines.html for full page with %d machines\n", len(machines))
-    renderTemplate(w, "machines.html", data)
+    h.renderer.RenderTemplate(w, "machines.html", data)
 }
 
 func (h *MachineHandler) GetMachineForm(w http.ResponseWriter, r *http.Request) {
@@ -130,7 +131,7 @@ func (h *MachineHandler) GetMachineForm(w http.ResponseWriter, r *http.Request) 
         "Locations": locations,
         "Edit":      idStr != "",
     }
-    renderTemplate(w, "machine_form.html", data)
+    h.renderer.RenderTemplate(w, "machine_form.html", data)
 }
 
 // Helper function to get active locations
@@ -260,4 +261,3 @@ func nullIfZeroTime(t time.Time) interface{} {
     }
     return t
 }
-

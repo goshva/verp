@@ -14,9 +14,3 @@ CREATE TABLE IF NOT EXISTS locations (
 
 CREATE INDEX IF NOT EXISTS idx_locations_active ON locations(is_active);
 CREATE INDEX IF NOT EXISTS idx_locations_name ON locations(name);
-
--- Insert sample locations
-INSERT INTO locations (name, address, contact_person, contact_phone, monthly_rent, rent_due_day) VALUES
-('ТЦ "Москва"', 'ул. Ленина, 1', 'Иванов Иван', '+7-999-123-45-67', 15000.00, 15),
-('ТРК "Европа"', 'пр. Мира, 25', 'Петрова Мария', '+7-999-765-43-21', 20000.00, 10),
-('Аэропорт', 'ш. Аэропортовское, 10', 'Сидоров Алексей', '+7-999-555-44-33', 30000.00, 5);

@@ -1,0 +1,65 @@
+{{ define "machines_list.html" }}
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Серийный номер</th>
+            <th>Локация</th>
+            <th>Модель</th>
+            <th>Вместимость</th>
+            <th>Текущее кол-во игрушек</th>
+            <th>Наличные</th>
+            <th>Статус</th>
+            <th>Дата установки</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{range .Machines}}
+        <tr>
+            <td>{{.ID}}</td>
+            <td>{{.SerialNumber}}</td>
+            <td>{{.LocationName}}</td>
+            <td>{{.Model}}</td>
+            <td>{{.CapacityToys}}</td>
+            <td>{{.CurrentToysCount}}</td>
+            <td>{{.CashAmount}} ₽</td>
+            <td>
+                <span class="status-badge {{if eq .Status "active"}}status-active{{else}}status-inactive{{end}}">
+                    {{if eq .Status "active"}}Активен{{else}}Обслуживание{{end}}
+                </span>
+            </td>
+            <td>{{.InstallationDate.Format "02.01.2006"}}</td>
+            <td>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn btn-primary"
+                            hx-get="/machines/form?id={{.ID}}"
+                            hx-target="#modal-body"
+                            onclick="VendERP.showModal()">
+                        ✏️
+                    </button>
+                    <button class="btn btn-danger"
+                            hx-delete="/machines/delete?id={{.ID}}"
+                            hx-target="#machines-table"
+                            hx-confirm="Удалить автомат?">
+                        🗑️
+                    </button>
+                </div>
+            </td>
+        </tr>
+        {{else}}
+        <tr>
+            <td colspan="10" style="text-align: center; padding: 2rem; color: var(--secondary);">
+                Нет автоматов. 
+                <button class="btn btn-primary"
+                        hx-get="/machines/form"
+                        hx-target="#modal-body"
+                        onclick="VendERP.showModal()">
+                    ➕ Добавить первый автомат
+                </button>
+            </td>
+        </tr>
+        {{end}}
+    </tbody>
+</table>
+{{ end }}

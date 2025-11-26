@@ -1,0 +1,81 @@
+{{ define "accounts_form.html" }}
+<form hx-post="/accounts/save" hx-target="#users-table">
+    <input type="hidden" name="id" value="{{.User.ID}}">
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+            <label class="form-label">Имя пользователя *</label>
+            <input type="text" name="username" value="{{.User.Username}}" class="form-input" required>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Email *</label>
+            <input type="email" name="email" value="{{.User.Email}}" class="form-input" required>
+        </div>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+            <label class="form-label">Роль *</label>
+            <select name="user_role" class="form-select" required>
+                <option value="user" {{if eq .User.UserRole "user"}}selected{{end}}>Пользователь</option>
+                <option value="admin" {{if eq .User.UserRole "admin"}}selected{{end}}>Администратор</option>
+                <option value="moderator" {{if eq .User.UserRole "moderator"}}selected{{end}}>Модератор</option>
+                <option value="agent" {{if eq .User.UserRole "agent"}}selected{{end}}>Агент</option>
+                <option value="support" {{if eq .User.UserRole "support"}}selected{{end}}>Поддержка</option>
+                <option value="partner" {{if eq .User.UserRole "partner"}}selected{{end}}>Партнер</option>
+                <option value="monitor" {{if eq .User.UserRole "monitor"}}selected{{end}}>Монитор</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Статус *</label>
+            <select name="status" class="form-select" required>
+                <option value="1" {{if eq .User.Status 1}}selected{{end}}>Активен</option>
+                <option value="0" {{if eq .User.Status 0}}selected{{end}}>Неактивен</option>
+            </select>
+        </div>
+    </div>
+    
+    <div class="form-group">
+        <label class="form-label">Полное имя</label>
+        <input type="text" name="full_user_name" value="{{.User.FullUserName}}" class="form-input">
+    </div>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+            <label class="form-label">Компания</label>
+            <input type="text" name="company_name" value="{{.User.CompanyName}}" class="form-input">
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Должность</label>
+            <input type="text" name="company_role" value="{{.User.CompanyRole}}" class="form-input">
+        </div>
+    </div>
+    
+    <div class="form-group">
+        <label class="form-label">Телефон</label>
+        <input type="tel" name="phone" value="{{.User.Phone}}" class="form-input">
+    </div>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+            <label class="form-label">Пароль {{if not .Edit}}*{{else}}(оставьте пустым чтобы не менять){{end}}</label>
+            <input type="password" name="password" class="form-input" {{if not .Edit}}required{{end}}>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Подтверждение пароля {{if not .Edit}}*{{else}}(оставьте пустым чтобы не менять){{end}}</label>
+            <input type="password" name="password_confirm" class="form-input" {{if not .Edit}}required{{end}}>
+        </div>
+    </div>
+    
+    <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
+        <button type="button" class="btn" onclick="hideModal()">Отмена</button>
+        <button type="submit" class="btn btn-primary">
+            {{if .Edit}}Обновить{{else}}Создать{{end}}
+        </button>
+    </div>
+</form>
+{{ end }}

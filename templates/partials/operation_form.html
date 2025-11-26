@@ -1,0 +1,91 @@
+{{ define "operation_form.html" }}
+<form hx-post="/operations/save" hx-target="#operations-table">
+    <input type="hidden" name="id" value="{{.Operation.ID}}">
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+            <label class="form-label">Тип операции</label>
+            <select name="operation_type" class="form-select" required>
+                <option value="">Выберите тип</option>
+                <option value="restock" {{if eq .Operation.OperationType "restock"}}selected{{end}}>Пополнение</option>
+                <option value="collection" {{if eq .Operation.OperationType "collection"}}selected{{end}}>Инкассация</option>
+                <option value="maintenance" {{if eq .Operation.OperationType "maintenance"}}selected{{end}}>Обслуживание</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Автомат</label>
+            <select name="vending_machine_id" class="form-select" required>
+                <option value="">Выберите автомат</option>
+                {{range .Machines}}
+                <option value="{{.ID}}" {{if eq .ID $.Operation.VendingMachineID}}selected{{end}}>
+                    {{.SerialNumber}} - {{.LocationName}}
+                </option>
+                {{end}}
+            </select>
+        </div>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+            <label class="form-label">Исполнитель</label>
+            <select name="performed_by" class="form-select" required>
+                <option value="">Выберите исполнителя</option>
+                {{range .Users}}
+                <option value="{{.ID}}" {{if eq .ID $.Operation.PerformedBy}}selected{{end}}>
+                    {{.Username}} - {{.FullUserName}}
+                </option>
+                {{end}}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Дата операции</label>
+            <input type="datetime-local" name="operation_date" 
+                   value="{{if not .Operation.OperationDate.IsZero}}{{.Operation.OperationDate.Format "2006-01-02T15:04"}}{{end}}" 
+                   class="form-input" required>
+        </div>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+            <label class="form-label">Игрушки до</label>
+            <input type="number" name="toys_before" value="{{.Operation.ToysBefore}}" class="form-input" min="0">
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Игрушки после</label>
+            <input type="number" name="toys_after" value="{{.Operation.ToysAfter}}" class="form-input" min="0">
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Добавлено игрушек</label>
+            <input type="number" name="toys_added" value="{{.Operation.ToysAdded}}" class="form-input" min="0">
+        </div>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+            <label class="form-label">Наличные до (₽)</label>
+            <input type="number" step="0.01" name="cash_before" value="{{.Operation.CashBefore}}" class="form-input" min="0">
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Наличные после (₽)</label>
+            <input type="number" step="0.01" name="cash_after" value="{{.Operation.CashAfter}}" class="form-input" min="0">
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Собрано наличных (₽)</label>
+            <input type="number" step="0.01" name="cash_collected" value="{{.Operation.CashCollected}}" class="form-input" min="0">
+        </div>
+    </div>
+    
+    <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
+        <button type="button" class="btn" _="on click trigger close">Отмена</button>
+        <button type="submit" class="btn btn-primary">
+            {{if .Edit}}Обновить{{else}}Создать{{end}}
+        </button>
+    </div>
+</form>
+{{ end }}

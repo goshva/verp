@@ -19,10 +19,3 @@ CREATE TABLE IF NOT EXISTS vending_machines (
 CREATE INDEX IF NOT EXISTS idx_machines_serial ON vending_machines(serial_number);
 CREATE INDEX IF NOT EXISTS idx_machines_location ON vending_machines(location_id);
 CREATE INDEX IF NOT EXISTS idx_machines_status ON vending_machines(status);
-
--- Insert sample machines
-INSERT INTO vending_machines (serial_number, model, location_id, capacity_toys, current_toys_count, cash_amount, installation_date) VALUES
-('VM001', 'KidyFun Pro 100', 1, 100, 45, 1250.50, '2024-01-15'),
-('VM002', 'ToyMagic 200', 1, 150, 120, 890.75, '2024-02-20'),
-('VM003', 'HappyKids Plus', 2, 100, 30, 567.25, '2024-03-10'),
-('VM004', 'SuperToy Deluxe', 3, 200, 180, 2100.00, '2024-01-05');

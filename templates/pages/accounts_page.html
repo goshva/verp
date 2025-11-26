@@ -1,0 +1,21 @@
+{{ define "accounts_page.html" }}
+{{ template "base.html" . }}
+{{ end }}
+
+{{ define "content" }}
+<div class="page-header">
+    <h1>👥 Управление пользователями</h1>
+    <button class="btn btn-primary" 
+            hx-get="/accounts/form" 
+            hx-target="#modal-body"
+            onclick="VendERP.showModal()">
+        ➕ Добавить пользователя
+    </button>
+</div>
+
+<div class="card">
+    <div id="users-table">
+        {{ template "accounts_list.html" . }}
+    </div>
+</div>
+{{ end }}

@@ -1,28 +1,32 @@
-
 package handlers
 
 import (
     "database/sql"
+    "fmt"
     "net/http"
     "strconv"
     "vend_erp/internal/models"
 )
 
 type LocationHandler struct {
-    db *sql.DB
+    db       *sql.DB
+    renderer *TemplateRenderer
 }
 
-func NewLocationHandler(db *sql.DB) *LocationHandler {
-    return &LocationHandler{db: db}
+func NewLocationHandler(db *sql.DB, renderer *TemplateRenderer) *LocationHandler {
+    return &LocationHandler{db: db, renderer: renderer}
 }
 
 func (h *LocationHandler) ListLocations(w http.ResponseWriter, r *http.Request) {
+    fmt.Printf("DEBUG: LocationHandler.ListLocations called for URL: %s\n", r.URL.Path)
+    
     rows, err := h.db.Query(`
         SELECT id, name, address, contact_person, contact_phone, 
                monthly_rent, rent_due_day, is_active
         FROM locations ORDER BY created_at DESC
     `)
     if err != nil {
+        fmt.Printf("DEBUG: Locations query error: %v\n", err)
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
     }
@@ -37,23 +41,28 @@ func (h *LocationHandler) ListLocations(w http.ResponseWriter, r *http.Request) 
             &location.MonthlyRent, &location.RentDueDay, &location.IsActive,
         )
         if err != nil {
+            fmt.Printf("DEBUG: Location scan error: %v\n", err)
             continue
         }
         locations = append(locations, location)
     }
 
+    fmt.Printf("DEBUG: Loaded %d locations\n", len(locations))
+
     data := map[string]interface{}{
         "Locations": locations,
         "Active":    "locations",
-		"Title":     "Локации",
+        "Title":     "Локации",
     }
     
     if r.Header.Get("HX-Request") == "true" {
-        renderTemplate(w, "locations_list.html", data)
+        fmt.Printf("DEBUG: Rendering locations_list.html for HTMX\n")
+        h.renderer.RenderTemplate(w, "locations_list.html", data)
         return
     }
     
-    renderTemplate(w, "locations.html", data)
+    fmt.Printf("DEBUG: Rendering locations.html for full page\n")
+    h.renderer.RenderTemplate(w, "locations.html", data)
 }
 
 func (h *LocationHandler) GetLocationForm(w http.ResponseWriter, r *http.Request) {
@@ -81,7 +90,7 @@ func (h *LocationHandler) GetLocationForm(w http.ResponseWriter, r *http.Request
         "Location": location,
         "Edit":     idStr != "",
     }
-    renderTemplate(w, "location_form.html", data)
+    h.renderer.RenderTemplate(w, "location_form.html", data)
 }
 
 func (h *LocationHandler) SaveLocation(w http.ResponseWriter, r *http.Request) {
