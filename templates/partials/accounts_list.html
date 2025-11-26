@@ -1,5 +1,5 @@
 {{ define "accounts_list.html" }}
-<table class="table">
+<table class="table" >
     <thead>
         <tr>
             <th>ID</th>
@@ -39,14 +39,14 @@
             <td>
                 <div style="display: flex; gap: 0.5rem;">
                     <button class="btn btn-primary" 
-                            hx-get="/account/form?id={{.ID}}"
+                            hx-get="/accounts/form?id={{.ID}}"
                             hx-target="#modal-body"
-                            _="on htmx:afterOnLoad call showModal()">
+                            onclick="VendERP.showModal()">
                         ✏️
                     </button>
                     <button class="btn btn-danger" 
-                            hx-delete="/account/delete?id={{.ID}}"
-                            hx-target="#users-table"
+                            hx-delete="/accounts/delete?id={{.ID}}"
+                            hx-target="#accounts-table"
                             hx-confirm="Удалить пользователя?">
                         🗑️
                     </button>
@@ -60,7 +60,7 @@
                 <button class="btn btn-primary" 
                         hx-get="/accounts/form" 
                         hx-target="#modal-body"
-                        _="on htmx:afterOnLoad call showModal()">
+                        onclick="VendERP.showModal()">
                     ➕ Добавить первого пользователя
                 </button>
             </td>

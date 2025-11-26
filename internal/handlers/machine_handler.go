@@ -87,12 +87,12 @@ func (h *MachineHandler) ListMachines(w http.ResponseWriter, r *http.Request) {
     
     if r.Header.Get("HX-Request") == "true" {
         fmt.Printf("DEBUG: Rendering machines_list.html for HTMX\n")
-        h.renderer.RenderTemplate(w, "machines_list.html", data)
+        h.renderer.Render(w, "machines_list.html", data)
         return
     }
     
     fmt.Printf("DEBUG: Rendering machines.html for full page with %d machines\n", len(machines))
-    h.renderer.RenderTemplate(w, "machines.html", data)
+    h.renderer.Render(w, "machines_page.html", data)
 }
 
 func (h *MachineHandler) GetMachineForm(w http.ResponseWriter, r *http.Request) {
@@ -131,7 +131,7 @@ func (h *MachineHandler) GetMachineForm(w http.ResponseWriter, r *http.Request) 
         "Locations": locations,
         "Edit":      idStr != "",
     }
-    h.renderer.RenderTemplate(w, "machine_form.html", data)
+    h.renderer.Render(w, "machine_form.html", data)
 }
 
 // Helper function to get active locations

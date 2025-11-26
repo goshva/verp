@@ -1,14 +1,14 @@
-{{ define "locations.html" }}
+{{ define "locations_page.html" }}
 {{ template "base.html" . }}
 {{ end }}
 
 {{ define "content" }}
 <div class="page-header">
-    <h1>📍 Управление локациями</h1>
+    <h1>📍 Локации</h1>
     <button class="btn btn-primary" 
             hx-get="/locations/form" 
             hx-target="#modal-body"
-            onclick="VendERP.showModal()">
+            onclick="showModal()">
         ➕ Добавить локацию
     </button>
 </div>

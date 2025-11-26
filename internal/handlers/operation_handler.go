@@ -82,12 +82,12 @@ func (h *OperationHandler) ListOperations(w http.ResponseWriter, r *http.Request
     
     if r.Header.Get("HX-Request") == "true" {
         fmt.Printf("DEBUG: Rendering operations_list.html for HTMX\n")
-        h.renderer.RenderTemplate(w, "operations_list.html", data)
+        h.renderer.Render(w, "operations_list.html", data)
         return
     }
     
     fmt.Printf("DEBUG: Rendering operations.html for full page with %d operations\n", len(operations))
-    h.renderer.RenderTemplate(w, "operations_page.html", data)
+    h.renderer.Render(w, "operations_page.html", data)
 }
 
 func (h *OperationHandler) GetOperationForm(w http.ResponseWriter, r *http.Request) {
@@ -133,7 +133,7 @@ func (h *OperationHandler) GetOperationForm(w http.ResponseWriter, r *http.Reque
         "Users":     users,
         "Edit":      idStr != "",
     }
-    h.renderer.RenderTemplate(w, "operation_form.html", data)
+    h.renderer.Render(w, "operation_form.html", data)
 }
 
 // Helper function to get active machines

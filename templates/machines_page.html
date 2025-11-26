@@ -1,21 +1,21 @@
-{{ define "operations_page.html" }}
+{{ define "machines_page.html" }}
 {{ template "base.html" . }}
 {{ end }}
 
 {{ define "content" }}
 <div class="page-header">
-    <h1>📋 История операций</h1>
+    <h1>🤖 Автоматы</h1>
     <button class="btn btn-primary" 
-            hx-get="/operations/form" 
+            hx-get="/machines/form" 
             hx-target="#modal-body"
             onclick="showModal()">
-        ➕ Добавить операцию
+        ➕ Добавить автомат
     </button>
 </div>
 
 <div class="card">
-    <div id="operations-table">
-        {{ template "operations_list.html" . }}
+    <div id="machines-table">
+        {{ template "machines_list.html" . }}
     </div>
 </div>
 {{ end }}

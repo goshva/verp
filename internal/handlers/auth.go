@@ -51,7 +51,7 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
             Title:  "Вход в систему",
             Active: "auth",
         }
-        h.renderer.RenderTemplate(w, "auth.html", data)
+        h.renderer.Render(w, "auth.html", data)
         return
     }
     
@@ -80,7 +80,7 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
             Title:  "Вход в систему",
             Active: "auth",
         }
-        h.renderer.RenderTemplate(w, "auth.html", data)
+        h.renderer.Render(w, "auth.html", data)
         return
     }
     
@@ -93,7 +93,7 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
             Title:  "Вход в систему",
             Active: "auth",
         }
-        h.renderer.RenderTemplate(w, "auth.html", data)
+        h.renderer.Render(w, "auth.html", data)
         return
     }
     
@@ -107,7 +107,7 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
             Title:  "Вход в систему",
             Active: "auth",
         }
-        h.renderer.RenderTemplate(w, "auth.html", data)
+        h.renderer.Render(w, "auth.html", data)
         return
     }
     
@@ -150,7 +150,7 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
             Title:  "Регистрация",
             Active: "auth",
         }
-        h.renderer.RenderTemplate(w, "auth.html", data)
+        h.renderer.Render(w, "auth.html", data)
         return
     }
     
@@ -174,7 +174,7 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
             Title:    "Регистрация",
             Active:   "auth",
         }
-        h.renderer.RenderTemplate(w, "auth.html", data)
+        h.renderer.Render(w, "auth.html", data)
         return
     }
     
@@ -187,7 +187,7 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
             Title:    "Регистрация",
             Active:   "auth",
         }
-        h.renderer.RenderTemplate(w, "auth.html", data)
+        h.renderer.Render(w, "auth.html", data)
         return
     }
     
@@ -205,7 +205,7 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
             Title:    "Регистрация",
             Active:   "auth",
         }
-        h.renderer.RenderTemplate(w, "auth.html", data)
+        h.renderer.Render(w, "auth.html", data)
         return
     }
     
@@ -220,7 +220,7 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
             Title:    "Регистрация",
             Active:   "auth",
         }
-        h.renderer.RenderTemplate(w, "auth.html", data)
+        h.renderer.Render(w, "auth.html", data)
         return
     }
     
@@ -239,7 +239,7 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
             Title:    "Регистрация",
             Active:   "auth",
         }
-        h.renderer.RenderTemplate(w, "auth.html", data)
+        h.renderer.Render(w, "auth.html", data)
         return
     }
     

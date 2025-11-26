@@ -57,12 +57,12 @@ func (h *LocationHandler) ListLocations(w http.ResponseWriter, r *http.Request) 
     
     if r.Header.Get("HX-Request") == "true" {
         fmt.Printf("DEBUG: Rendering locations_list.html for HTMX\n")
-        h.renderer.RenderTemplate(w, "locations_list.html", data)
+        h.renderer.Render(w, "locations_list.html", data)
         return
     }
     
     fmt.Printf("DEBUG: Rendering locations.html for full page\n")
-    h.renderer.RenderTemplate(w, "locations.html", data)
+    h.renderer.Render(w, "locations_page.html", data)
 }
 
 func (h *LocationHandler) GetLocationForm(w http.ResponseWriter, r *http.Request) {
@@ -90,7 +90,7 @@ func (h *LocationHandler) GetLocationForm(w http.ResponseWriter, r *http.Request
         "Location": location,
         "Edit":     idStr != "",
     }
-    h.renderer.RenderTemplate(w, "location_form.html", data)
+    h.renderer.Render(w, "location_form.html", data)
 }
 
 func (h *LocationHandler) SaveLocation(w http.ResponseWriter, r *http.Request) {

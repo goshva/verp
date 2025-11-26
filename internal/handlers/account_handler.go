@@ -18,6 +18,9 @@ func NewUserHandler(db *sql.DB, renderer *TemplateRenderer) *UserHandler {
 }
 
 func (h *UserHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
+        w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+    w.Header().Set("Pragma", "no-cache")
+    w.Header().Set("Expires", "0")
     fmt.Printf("DEBUG: UserHandler.ListUsers called for URL: %s\n", r.URL.Path)
     fmt.Printf("DEBUG: Method: %s, HTMX: %s\n", r.Method, r.Header.Get("HX-Request"))
     
@@ -88,12 +91,12 @@ func (h *UserHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
     
     if r.Header.Get("HX-Request") == "true" {
         fmt.Printf("DEBUG: Rendering acccounts_list.html for HTMX\n")
-        h.renderer.RenderTemplate(w, "accounts_list.html", data)
+        h.renderer.Render(w, "accounts_list.html", data)
         return
     }
     fmt.Printf("DEBUG: Rendering accounts_page.html for full page with %d accounts\n", len(accounts))
 
-    h.renderer.RenderTemplate(w, "accounts_page.html", data)
+    h.renderer.Render(w, "accounts_page.html", data)
 }
 
 func (h *UserHandler) GetUserForm(w http.ResponseWriter, r *http.Request) {
@@ -137,7 +140,7 @@ func (h *UserHandler) GetUserForm(w http.ResponseWriter, r *http.Request) {
         "User": user,
         "Edit": idStr != "",
     }
-    h.renderer.RenderTemplate(w, "account_form.html", data)
+    h.renderer.Render(w, "account_form.html", data)
 }
 
 func (h *UserHandler) SaveUser(w http.ResponseWriter, r *http.Request) {

@@ -4,88 +4,127 @@ import (
     "fmt"
     "html/template"
     "net/http"
-    "os"
-    "path/filepath"
 )
 
-// TemplateRenderer handles template rendering for handlers
 type TemplateRenderer struct {
-    tmpl *template.Template
+    templates map[string]*template.Template
 }
 
-// NewTemplateRenderer creates a new template renderer
 func NewTemplateRenderer() *TemplateRenderer {
-    tr := &TemplateRenderer{}
-    
-    // Parse all HTML files recursively
-    tmpl := template.New("")
-    
-    err := filepath.Walk("templates", func(path string, info os.FileInfo, err error) error {
-        if err != nil {
-            return err
-        }
-        if !info.IsDir() && filepath.Ext(path) == ".html" {
-            data, err := os.ReadFile(path)
-            if err != nil {
-                return err
-            }
-            _, err = tmpl.New(path).Parse(string(data))
-            if err != nil {
-                return err
-            }
-        }
-        return nil
-    })
-    
-    if err != nil {
-        fmt.Printf("Warning: Could not load templates: %v\n", err)
-        // Create a basic template as fallback
-        tr.tmpl = template.Must(template.New("base").Parse("Template system not initialized"))
-    } else {
-        tr.tmpl = tmpl
+    renderer := &TemplateRenderer{
+        templates: make(map[string]*template.Template),
     }
-    return tr
+    
+    // Загружаем шаблоны явно по категориям
+    renderer.loadTemplates()
+    
+    // Выводим список загруженных шаблонов
+    fmt.Println("DEBUG: Loaded templates:")
+    for name := range renderer.templates {
+        fmt.Printf("  - %s\n", name)
+    }
+    
+    return renderer
 }
 
-// RenderTemplate renders a template with data
-func (tr *TemplateRenderer) RenderTemplate(w http.ResponseWriter, name string, data interface{}) {
-    fmt.Printf("DEBUG: Rendering template: %s with data: %+v\n", name, data)
+func (tr *TemplateRenderer) loadTemplates() {
+    // Загружаем базовые шаблоны
+    baseTmpl := template.Must(template.ParseFiles(
+        "templates/layouts/base.html",
+        "templates/components/theme_toggle.html",
+        "templates/partials/sidebar.html",
+    ))
     
-    if tr.tmpl == nil {
-        fmt.Printf("ERROR: Templates not initialized!\n")
-        http.Error(w, "Template system not initialized", http.StatusInternalServerError)
-        return
+    // Загружаем основные страницы и их partials
+    mainPages := []struct {
+        page    string
+        partial string
+    }{
+        {"accounts_page.html", "accounts_list.html"},
+        {"locations_page.html", "locations_list.html"}, 
+        {"machines_page.html", "machines_list.html"},
+        {"operations_page.html", "operations_list.html"},
+        {"auth.html", ""},
     }
     
-    // Try different template paths
-    templatePaths := []string{
-        name,
-        "templates/" + name,
-        "templates/pages/" + name,
-        "templates/partials/" + name,
-    }
-    
-    var foundTemplate *template.Template
-    for _, path := range templatePaths {
-        foundTemplate = tr.tmpl.Lookup(path)
-        if foundTemplate != nil {
-            break
+    for _, mp := range mainPages {
+        // Создаем клон базового шаблона для каждой страницы
+        pageTmpl := template.Must(baseTmpl.Clone())
+        
+        // Парсим основную страницу
+        pagePath := "templates/" + mp.page
+        pageTmpl = template.Must(pageTmpl.ParseFiles(pagePath))
+        
+        // Парсим partial если он есть
+        if mp.partial != "" {
+            partialPath := "templates/partials/" + mp.partial
+            pageTmpl = template.Must(pageTmpl.ParseFiles(partialPath))
         }
+        
+        // Сохраняем под именем основной страницы
+        tr.templates[mp.page] = pageTmpl
     }
     
-    if foundTemplate == nil {
-        fmt.Printf("ERROR: Template '%s' not found! Available templates:\n", name)
-        http.Error(w, "Template not found: "+name, http.StatusInternalServerError)
-        return
+    // Загружаем формы отдельно
+    forms := []string{
+        "account_form.html",
+        "location_form.html", 
+        "machine_form.html",
+        "operation_form.html",
     }
-    /*
+    
+    for _, form := range forms {
+        formPath := "templates/partials/" + form
+        formTmpl := template.Must(template.ParseFiles(formPath))
+        tr.templates[form] = formTmpl
+    }
+    
+    // Загружаем partials отдельно для HTMX
+    partials := []string{
+        "accounts_list.html",
+        "locations_list.html",
+        "machines_list.html", 
+        "operations_list.html",
+        "sidebar.html",
+    }
+    
+    for _, partial := range partials {
+        partialPath := "templates/partials/" + partial
+        partialTmpl := template.Must(template.ParseFiles(partialPath))
+        tr.templates[partial] = partialTmpl
+    }
+}
+
+func (tr *TemplateRenderer) Render(w http.ResponseWriter, name string, data interface{}) {
+    fmt.Printf("DEBUG: Attempting to render template: %s\n", name)
+    
+    // Заголовки против кэширования
     w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
     w.Header().Set("Pragma", "no-cache")
     w.Header().Set("Expires", "0")
-    */
-    err := foundTemplate.Execute(w, data)
-    if err != nil {
-        fmt.Printf("DEBUG: Template error: %v\n", err)
-        http.Error(w, err.Error(), http.StatusInternalServerError)
+    
+    tmpl, exists := tr.templates[name]
+    if !exists {
+        fmt.Printf("ERROR: Template %s not found in registry\n", name)
+        fmt.Printf("DEBUG: Available templates: %v\n", tr.getTemplateNames())
+        http.Error(w, "Template not found: "+name, http.StatusInternalServerError)
+        return
     }
+    
+    if err := tmpl.ExecuteTemplate(w, name, data); err != nil {
+        fmt.Printf("ERROR: Template %s execution failed: %v\n", name, err)
+        fmt.Printf("DEBUG: Template details: %+v\n", tmpl.DefinedTemplates())
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+    
+    fmt.Printf("DEBUG: Successfully rendered template: %s\n", name)
+}
+
+func (tr *TemplateRenderer) getTemplateNames() []string {
+    names := make([]string, 0, len(tr.templates))
+    for name := range tr.templates {
+        names = append(names, name)
+    }
+    return names
 }

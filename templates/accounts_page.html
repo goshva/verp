@@ -4,17 +4,17 @@
 
 {{ define "content" }}
 <div class="page-header">
-    <h1>👥 Управление пользователями</h1>
+    <h1>👥 Пользователи</h1>
     <button class="btn btn-primary" 
             hx-get="/accounts/form" 
             hx-target="#modal-body"
-            onclick="VendERP.showModal()">
+            onclick="showModal()">
         ➕ Добавить пользователя
     </button>
 </div>
 
 <div class="card">
-    <div id="users-table">
+    <div id="accounts-table">
         {{ template "accounts_list.html" . }}
     </div>
 </div>
