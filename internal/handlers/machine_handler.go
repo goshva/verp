@@ -251,7 +251,8 @@ func (h *MachineHandler) DeleteMachine(w http.ResponseWriter, r *http.Request) {
     }
     
     w.Header().Set("HX-Trigger", "machineDeleted")
-    w.WriteHeader(http.StatusOK)
+    // ИСПРАВЛЕНО: правильный порядок аргументов
+    h.ListMachines(w, r)
 }
 
 // Вспомогательная функция для обработки нулевых дат

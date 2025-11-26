@@ -18,6 +18,7 @@ func NewLocationHandler(db *sql.DB, renderer *TemplateRenderer) *LocationHandler
 }
 
 func (h *LocationHandler) ListLocations(w http.ResponseWriter, r *http.Request) {
+    
     fmt.Printf("DEBUG: LocationHandler.ListLocations called for URL: %s\n", r.URL.Path)
     
     rows, err := h.db.Query(`
@@ -161,4 +162,6 @@ func (h *LocationHandler) DeleteLocation(w http.ResponseWriter, r *http.Request)
     
     w.Header().Set("HX-Trigger", "locationDeleted")
     w.WriteHeader(http.StatusOK)
+    h.ListLocations(w, r) // ПРАВИЛЬНО: w, r
+    
 }

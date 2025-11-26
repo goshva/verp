@@ -1,0 +1,189 @@
+{{ define "auth.html" }}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{if .SignUp}}Регистрация{{else}}Вход в систему{{end}} - Vend ERP</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        
+        .auth-container {
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .card-header {
+            background: #2c3e50;
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .card-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .card-body {
+            padding: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e8ed;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+        
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+        
+        .btn-link {
+            background: none;
+            color: #3498db;
+            padding: 0.5rem;
+        }
+        
+        .btn-link:hover {
+            background: #f8f9fa;
+        }
+        
+        .alert {
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+        
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="card">
+            <div class="card-header">
+                <h2>{{if .SignUp}}Регистрация{{else}}Вход в систему{{end}}</h2>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{if .SignUp}}/auth/signup{{else}}/auth/signin{{end}}">
+                    <div class="form-group">
+                        <label class="form-label">Email *</label>
+                        <input type="email" name="email" class="form-input" required value="{{.Email}}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Пароль *</label>
+                        <input type="password" name="password" class="form-input" required>
+                    </div>
+                    
+                    {{if .SignUp}}
+                    <div class="form-group">
+                        <label class="form-label">Подтверждение пароля *</label>
+                        <input type="password" name="password_confirm" class="form-input" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Имя пользователя *</label>
+                        <input type="text" name="username" class="form-input" required value="{{.Username}}">
+                    </div>
+                    {{end}}
+                    
+                    {{if .Error}}
+                    <div class="alert alert-danger">
+                        {{.Error}}
+                    </div>
+                    {{end}}
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">
+                        {{if .SignUp}}Зарегистрироваться{{else}}Войти{{end}}
+                    </button>
+                    
+                    <div class="text-center">
+                        {{if .SignUp}}
+                        <a href="/auth/signin" class="btn btn-link">Уже есть аккаунт? Войти</a>
+                        {{else}}
+                        <a href="/auth/signup" class="btn btn-link">Нет аккаунта? Зарегистрироваться</a>
+                        {{end}}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+{{ end }}

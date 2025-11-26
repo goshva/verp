@@ -252,6 +252,7 @@ func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
     
     w.Header().Set("HX-Trigger", "userDeleted")
     w.WriteHeader(http.StatusOK)
+    h.ListUsers(w, r) 
 }
 
 // Helper function for empty strings

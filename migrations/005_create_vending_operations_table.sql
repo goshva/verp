@@ -22,3 +22,4 @@ CREATE INDEX IF NOT EXISTS idx_vending_operations_date ON vending_operations(ope
 CREATE INDEX IF NOT EXISTS idx_vending_operations_machine ON vending_operations(vending_machine_id);
 CREATE INDEX IF NOT EXISTS idx_vending_operations_type ON vending_operations(operation_type);
 CREATE INDEX IF NOT EXISTS idx_vending_operations_performed_by ON vending_operations(performed_by);
+ALTER TABLE vending_operations ADD COLUMN IF NOT EXISTS notes TEXT;

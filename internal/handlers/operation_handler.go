@@ -276,5 +276,6 @@ func (h *OperationHandler) DeleteOperation(w http.ResponseWriter, r *http.Reques
     }
     
     w.Header().Set("HX-Trigger", "operationDeleted")
-    w.WriteHeader(http.StatusOK)
+    // ИСПРАВЛЕНО: правильный порядок аргументов
+    h.ListOperations(w, r)
 }

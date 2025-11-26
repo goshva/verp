@@ -7,6 +7,7 @@ import (
     "os"
     "strconv"
 
+    "github.com/joho/godotenv"
     _ "github.com/lib/pq"
 )
 
@@ -20,7 +21,13 @@ type Config struct {
 }
 
 func LoadConfig() *Config {
-    // Default configuration for local development
+    // Load .env file
+    err := godotenv.Load()
+    if err != nil {
+        log.Printf("Warning: Error loading .env file: %v", err)
+        // Continue with environment variables or defaults
+    }
+
     config := &Config{
         DBHost:     getEnv("DB_HOST", "localhost"),
         DBPort:     getEnvAsInt("DB_PORT", 5432),
