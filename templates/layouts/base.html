@@ -7,16 +7,12 @@
     <title>{{.Title}} - VERP</title>
     <script src="https://unpkg.com/htmx.org@1.9.6"></script> 
     <link rel="stylesheet" href="/static/css/styles.css?v=1">
-    <link rel="stylesheet" href="/static/css/dark-theme.css?v=1">
+    <link rel="stylesheet" href="/static/css/dark-theme.css?v=2">
     </head>
 <body class="dark-theme">
     {{ template "sidebar" . }}
     
     <div class="main-content">
-        <div class="theme-toggle-container">
-            <button id="theme-toggle" class="btn">☀️</button>
-        </div>
-        
         {{template "content" .}}
     </div>
     

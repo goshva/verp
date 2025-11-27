@@ -1,12 +1,220 @@
 {{ define "sidebar" }}
 <div class="sidebar">
-    <h2 style="margin-bottom: 2rem; color: var(--primary);">VendERP</h2>
-    <nav>
-        <a href="/locations" class="nav-link {{if eq .Active " locations"}}active{{end}}">📍 Локации</a>
-        <a href="/machines" class="nav-link {{if eq .Active " machines"}}active{{end}}">🤖 Автоматы</a>
-        <a href="/operations" class="nav-link {{if eq .Active " operations_page"}}active{{end}}">📋 Операции</a>
-        <a href="/accounts" class="nav-link {{if eq .Active " users"}}active{{end}}">👥 Пользователи</a>
-
+    <h2 class="sidebar-title">VERP</h2>
+    <nav class="sidebar-nav">
+        <a href="/locations" class="nav-link {{if eq .Active "locations"}}active{{end}}" title="Локации">
+            <span class="nav-icon">📍</span>
+            <span class="nav-text">Локации</span>
+        </a>
+        <a href="/machines" class="nav-link {{if eq .Active "machines"}}active{{end}}" title="Автоматы">
+            <span class="nav-icon">🤖</span>
+            <span class="nav-text">Автоматы</span>
+        </a>
+        <a href="/operations" class="nav-link {{if eq .Active "operations"}}active{{end}}" title="Операции">
+            <span class="nav-icon">📋</span>
+            <span class="nav-text">Операции</span>
+        </a>
+        <a href="/accounts" class="nav-link {{if eq .Active "accounts"}}active{{end}}" title="Пользователи">
+            <span class="nav-icon">👥</span>
+            <span class="nav-text">Пользователи</span>
+        </a>
+        <div class="theme-toggle-container">
+            <button id="theme-toggle" class="btn" title="Переключить тему">
+                <span>🌙</span>
+                <span class="theme-toggle-text">Тёмная тема</span>
+            </button>
+        </div>
     </nav>
 </div>
+
+<style>
+    /* Sidebar styles */
+    .sidebar {
+        width: 70px;
+        transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        padding: 1rem 0;
+        position: fixed;
+        z-index: 999;
+    }
+
+    .sidebar:hover {
+        width: 250px;
+    }
+
+    /* Title styles */
+    .sidebar-title {
+        color: var(--primary);
+        margin-bottom: 2rem;
+        text-align: center;
+        font-size: 1.1rem;
+        white-space: nowrap;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        padding: 0 0.5rem;
+    }
+
+    .sidebar:hover .sidebar-title {
+        text-align: left;
+        padding-left: 1rem;
+    }
+
+    /* Navigation styles - fixed height */
+    .sidebar-nav {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        width: 100%;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        height: auto;
+        /* Высота не изменяется */
+    }
+
+    .sidebar:hover .sidebar-nav {
+        align-items: stretch;
+        /* Высота остается прежней */
+    }
+
+    /* Navigation links - fixed height */
+    .nav-link {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 0;
+        color: var(--text-secondary);
+        text-decoration: none;
+        border-radius: 8px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        height: 44px;
+        /* Фиксированная высота */
+        justify-content: center;
+        width: 44px;
+        margin: 0 auto;
+    }
+
+    .sidebar:hover .nav-link {
+        width: calc(100% - 1rem);
+        /* Отступы сохраняются */
+        justify-content: flex-start;
+        margin: 0 0.5rem;
+        padding: 0.75rem 0.5rem;
+        height: 44px;
+        /* Высота не меняется */
+    }
+
+    /* Icon styles - fixed position */
+    .nav-icon {
+        font-size: 1.25rem;
+        min-width: 24px;
+        text-align: center;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .sidebar:hover .nav-icon {
+        position: relative;
+        left: 0;
+        transform: none;
+        margin-right: 0;
+    }
+
+    /* Text styles */
+    .nav-text {
+        opacity: 0;
+        transform: translateX(-10px);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        width: 0;
+        overflow: hidden;
+        font-size: 0.875rem;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    .sidebar:hover .nav-text {
+        opacity: 1;
+        transform: translateX(0);
+        width: auto;
+        margin-left: 0.75rem;
+    }
+
+    /* Hover and active states */
+    .nav-link:hover {
+        background: var(--bg-hover);
+        color: var(--text-primary);
+    }
+
+    .nav-link:hover .nav-icon {
+        transform: translateX(-50%) scale(1.1);
+    }
+
+    .sidebar:hover .nav-link:hover .nav-icon {
+        transform: scale(1.1);
+    }
+
+    .nav-link.active {
+        background: var(--gradient-primary);
+        color: white;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    /* Dark theme adjustments */
+    body.dark-theme .sidebar {
+        background: var(--bg-secondary);
+        border-right: 1px solid var(--border);
+    }
+
+    body.dark-theme .nav-link:hover {
+        background: var(--bg-hover);
+        border-color: var(--primary);
+    }
+
+
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 100%;
+            height: auto;
+            position: relative;
+            padding: 1rem;
+        }
+
+        .sidebar:hover {
+            width: 100%;
+        }
+
+        .sidebar-nav {
+            align-items: stretch;
+        }
+
+        .nav-link {
+            width: 100%;
+            justify-content: flex-start;
+            margin: 0;
+            padding: 0.75rem 1rem;
+            height: 44px;
+        }
+
+        .nav-icon {
+            position: relative;
+            left: 0;
+            transform: none;
+        }
+
+        .nav-text {
+            opacity: 1;
+            transform: translateX(0);
+            width: auto;
+            margin-left: 0.75rem;
+        }
+
+        .sidebar:hover~.main-content {
+            margin-left: 0;
+        }
+    }
+</style>
 {{ end }}
