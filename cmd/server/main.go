@@ -6,8 +6,8 @@ import (
     
     "vend_erp/config"
     "vend_erp/migrations"
-
-    _ "github.com/lib/pq"
+    // Remove the duplicate import below
+    // _ "github.com/jackc/pgx/v4/stdlib"
 )
 
 func main() {

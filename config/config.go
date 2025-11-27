@@ -8,7 +8,7 @@ import (
     "strconv"
 
     "github.com/joho/godotenv"
-    _ "github.com/lib/pq"
+    _ "github.com/jackc/pgx/v4/stdlib" 
 )
 
 type Config struct {
@@ -62,8 +62,13 @@ func (c *Config) GetConnectionString() string {
 }
 
 func ConnectDB(config *Config) (*sql.DB, error) {
+    // Remove problematic environment variable
+    os.Unsetenv("PGLOCALEDIR")
+    
     connStr := config.GetConnectionString()
-    db, err := sql.Open("postgres", connStr)
+    
+    // Use "pgx" as driver name instead of "postgres"
+    db, err := sql.Open("pgx", connStr)
     if err != nil {
         return nil, fmt.Errorf("error opening database: %v", err)
     }

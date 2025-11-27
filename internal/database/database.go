@@ -3,16 +3,16 @@ package database
 import (
     "database/sql"
     "fmt"
-    "vend_erp/internal/config"
-
-    _ "github.com/lib/pq"
+    "vend_erp/config" // Changed from internal/config to config
+    _ "github.com/jackc/pgx/v4/stdlib"
 )
 
 func Connect(cfg *config.Config) (*sql.DB, error) {
-    connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=require",
-        cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword, cfg.DBName)
+    connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+        cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword, cfg.DBName, cfg.SSLMode)
 
-    db, err := sql.Open("postgres", connStr)
+    // Use "pgx" as driver name
+    db, err := sql.Open("pgx", connStr)
     if err != nil {
         return nil, fmt.Errorf("error opening database: %w", err)
     }
