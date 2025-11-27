@@ -40,15 +40,41 @@ func (h *DashboardHandler) ShowDashboard(w http.ResponseWriter, r *http.Request)
         return
     }
     
+    // Статистика автоматов
+    var totalMachines, activeMachines int
+    var totalCash float64
+    var totalToys int
+
+    h.db.QueryRow("SELECT COUNT(*) FROM vending_machines").Scan(&totalMachines)
+    h.db.QueryRow("SELECT COUNT(*) FROM vending_machines WHERE status = 'active'").Scan(&activeMachines)
+    h.db.QueryRow("SELECT COALESCE(SUM(cash_amount), 0) FROM vending_machines").Scan(&totalCash)
+    h.db.QueryRow("SELECT COALESCE(SUM(current_toys_count), 0) FROM vending_machines").Scan(&totalToys)
+
+    // Статистика операций
+    var totalOperations, restockOperations, collectionOperations, maintenanceOperations int
+
+    h.db.QueryRow("SELECT COUNT(*) FROM vending_operations").Scan(&totalOperations)
+    h.db.QueryRow("SELECT COUNT(*) FROM vending_operations WHERE operation_type = 'restock'").Scan(&restockOperations)
+    h.db.QueryRow("SELECT COUNT(*) FROM vending_operations WHERE operation_type = 'collection'").Scan(&collectionOperations)
+    h.db.QueryRow("SELECT COUNT(*) FROM vending_operations WHERE operation_type = 'maintenance'").Scan(&maintenanceOperations)
+
     data := map[string]interface{}{
-        "TotalValue":        fmt.Sprintf("%.2f ₽", stats.TotalValue),
-        "LowStockCount":     stats.LowStockCount,
-        "OutOfStockCount":   stats.OutOfStockCount,
-        "TotalWarehouses":   stats.TotalWarehouses,
-        "InventoryByType":   inventoryByType,
-        "LowStockItems":     lowStockItems,
-        "Active":            "dashboard",
-        "Title":             "Дашборд",
+        "TotalValue":          fmt.Sprintf("%.2f ₽", stats.TotalValue),
+        "LowStockCount":       stats.LowStockCount,
+        "OutOfStockCount":     stats.OutOfStockCount,
+        "TotalWarehouses":     stats.TotalWarehouses,
+        "InventoryByType":     inventoryByType,
+        "LowStockItems":       lowStockItems,
+        "TotalMachines":       totalMachines,
+        "ActiveMachines":      activeMachines,
+        "TotalCash":           fmt.Sprintf("%.2f ₽", totalCash),
+        "TotalToys":           totalToys,
+        "TotalOperations":     totalOperations,
+        "RestockOperations":   restockOperations,
+        "CollectionOperations": collectionOperations,
+        "MaintenanceOperations": maintenanceOperations,
+        "Active":              "dashboard",
+        "Title":               "Дашборд",
     }
     
     h.renderer.Render(w, "dashboard_page.html", data)

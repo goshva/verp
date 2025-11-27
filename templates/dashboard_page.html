@@ -10,7 +10,64 @@
 
 <!-- Основная статистика -->
 <div class="card">
-    <h2 style="margin-bottom: 1.5rem;">📈 Статистика складов</h2>
+    <h2 style="margin-bottom: 1.5rem;">📈 Общая статистика</h2>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+        <!-- Статистика автоматов -->
+        <div class="stat-card">
+            <div class="stat-icon">🤖</div>
+            <div class="stat-value">{{.TotalMachines}}</div>
+            <div class="stat-label">Всего автоматов</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">🟢</div>
+            <div class="stat-value">{{.ActiveMachines}}</div>
+            <div class="stat-label">Активных автоматов</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">💰</div>
+            <div class="stat-value">{{.TotalCash}}</div>
+            <div class="stat-label">Общая сумма в автоматах</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">🎪</div>
+            <div class="stat-value">{{.TotalToys}}</div>
+            <div class="stat-label">Игрушек в автоматах</div>
+        </div>
+        
+        <!-- Статистика операций -->
+        <div class="stat-card">
+            <div class="stat-icon">📋</div>
+            <div class="stat-value">{{.TotalOperations}}</div>
+            <div class="stat-label">Всего операций</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">🔄</div>
+            <div class="stat-value">{{.RestockOperations}}</div>
+            <div class="stat-label">Пополнений</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">💵</div>
+            <div class="stat-value">{{.CollectionOperations}}</div>
+            <div class="stat-label">Инкассаций</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">🔧</div>
+            <div class="stat-value">{{.MaintenanceOperations}}</div>
+            <div class="stat-label">Обслуживаний</div>
+        </div>
+    </div>
+</div>
+
+<!-- Статистика складов -->
+<div class="card">
+    <h2 style="margin-bottom: 1.5rem;">🏭 Статистика складов</h2>
     
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
         <div class="stat-card">
@@ -46,7 +103,7 @@
         <h3>📦 Распределение по типам</h3>
         <div style="margin-top: 1rem;">
             {{range .InventoryByType}}
-            <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 0.75rem; padding: 0.5rem; background: var(--bg-secondary); border-radius: 6px;">
+            <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 0.75rem; padding: 0.5rem; border-radius: 6px;">
                 <span style="font-weight: 500;">{{.TypeName}}</span>
                 <span style="font-weight: 600; color: var(--primary);">{{.Count}} ед.</span>
             </div>
@@ -103,12 +160,7 @@
 
 <style>
 .stat-card {
-    background: var(--bg-secondary);
-    padding: 1.5rem;
-    border-radius: 12px;
     text-align: center;
-    border: 1px solid var(--border);
-    transition: transform 0.2s ease;
 }
 
 .stat-card:hover {

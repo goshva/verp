@@ -26,9 +26,9 @@
                 </td>
                 <td>
                     <span class="item-type-badge {{.ItemType}}">
-                        {{if eq .ItemType "vending_machine"}}🤖 Автомат
-                        {{else if eq .ItemType "toy"}}🎯 Игрушка
-                        {{else}}💊 Капсула{{end}}
+                        {{if eq .ItemType "vending_machine"}}Автомат
+                        {{else if eq .ItemType "toy"}}Игрушка
+                        {{else}}Капсула{{end}}
                     </span>
                 </td>
                 <td>
@@ -57,14 +57,6 @@
                     </div>
                 </td>
                 <td>
-                    {{if lt .Quantity .MinStockLevel}}
-                    <span class="status-badge status-warning">Низкий запас</span>
-                    {{else if eq .Quantity 0}}
-                    <span class="status-badge status-inactive">Отсутствует</span>
-                    {{else}}
-                    <span class="status-badge status-active">В наличии</span>
-                    {{end}}
-                    
                     <!-- Прогресс бар -->
                     <div style="margin-top: 0.5rem;">
                         <div style="background: var(--bg-secondary); height: 4px; border-radius: 2px; overflow: hidden;">
