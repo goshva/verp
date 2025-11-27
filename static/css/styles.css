@@ -148,10 +148,6 @@ body {
     letter-spacing: 0.05em;
 }
 
-.table tr:hover {
-    background: #f8fafc;
-}
-
 /* Forms */
 .form-group {
     margin-bottom: 1rem;

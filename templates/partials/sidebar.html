@@ -2,6 +2,10 @@
 <div class="sidebar">
     <h2 class="sidebar-title">VERP</h2>
     <nav class="sidebar-nav">
+        <a href="/dashboard" class="nav-link {{if eq .Active "dashboard"}}active{{end}}" title="Дашборд">
+            <span class="nav-icon">📊</span>
+            <span class="nav-text">Дашборд</span>
+        </a>
         <a href="/locations" class="nav-link {{if eq .Active "locations"}}active{{end}}" title="Локации">
             <span class="nav-icon">📍</span>
             <span class="nav-text">Локации</span>
@@ -13,6 +17,10 @@
         <a href="/operations" class="nav-link {{if eq .Active "operations"}}active{{end}}" title="Операции">
             <span class="nav-icon">📋</span>
             <span class="nav-text">Операции</span>
+        </a>
+        <a href="/warehouses" class="nav-link {{if eq .Active "warehouses"}}active{{end}}" title="Склады">
+            <span class="nav-icon">🏭</span>
+            <span class="nav-text">Склады</span>
         </a>
         <a href="/accounts" class="nav-link {{if eq .Active "accounts"}}active{{end}}" title="Пользователи">
             <span class="nav-icon">👥</span>

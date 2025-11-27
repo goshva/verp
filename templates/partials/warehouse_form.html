@@ -1,0 +1,62 @@
+{{ define "warehouse_form.html" }}
+<form hx-post="/warehouses/save" hx-target="#warehouses-table">
+    <input type="hidden" name="id" value="{{.Warehouse.ID}}">
+    
+    <div class="form-group">
+        <label class="form-label">Название склада</label>
+        <input type="text" name="name" value="{{.Warehouse.Name}}" class="form-input" required
+               placeholder="Например: Основной склад Москва">
+    </div>
+
+    <div class="form-group">
+        <label class="form-label">Адрес склада</label>
+        <textarea name="address" class="form-input" rows="3" required
+                  placeholder="Полный адрес склада">{{.Warehouse.Address}}</textarea>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+            <label class="form-label">Контактное лицо</label>
+            <input type="text" name="contact_person" value="{{.Warehouse.ContactPerson}}" 
+                   class="form-input" placeholder="ФИО ответственного">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Телефон</label>
+            <input type="tel" name="contact_phone" value="{{.Warehouse.ContactPhone}}" 
+                   class="form-input" placeholder="+7-XXX-XXX-XX-XX">
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+            <label class="form-label">Общая вместимость (ед.)</label>
+            <input type="number" name="total_capacity" value="{{.Warehouse.TotalCapacity}}" 
+                   class="form-input" min="1" required>
+            <div class="form-help">Максимальное количество единиц хранения</div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Текущая загрузка (ед.)</label>
+            <input type="number" name="current_usage" value="{{.Warehouse.CurrentUsage}}" 
+                   class="form-input" min="0" readonly style="background: var(--bg-secondary);">
+            <div class="form-help">Рассчитывается автоматически</div>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="form-label">
+            <input type="checkbox" name="is_active" value="true" {{if .Warehouse.IsActive}}checked{{end}}>
+            Активный склад
+        </label>
+        <div class="form-help">Неактивные склады скрыты из выпадающих списков</div>
+    </div>
+
+    <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
+        <button type="button" class="btn" _="on click trigger close">Отмена</button>
+        <button type="submit" class="btn btn-primary">
+            {{if .Edit}}Обновить{{else}}Создать{{end}}
+        </button>
+    </div>
+</form>
+{{ end }}
