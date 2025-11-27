@@ -1,5 +1,6 @@
 {{ define "warehouse_form.html" }}
 <form hx-post="/warehouses/save" hx-target="#warehouses-table">
+
     <input type="hidden" name="id" value="{{.Warehouse.ID}}">
     
     <div class="form-group">
@@ -53,7 +54,7 @@
     </div>
 
     <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
-        <button type="button" class="btn" _="on click trigger close">Отмена</button>
+        <button type="button" class="btn" onclick="document.getElementById('modal').style.display = 'none'; document.getElementById('modal-body').innerHTML = '';">Отмена</button>
         <button type="submit" class="btn btn-primary">
             {{if .Edit}}Обновить{{else}}Создать{{end}}
         </button>

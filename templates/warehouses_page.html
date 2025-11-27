@@ -57,20 +57,20 @@
     </div>
 </div>
 
-<!-- Основная таблица инвентаря -->
 <div class="card">
     <div id="warehouses-table">
         {{ template "warehouses_list.html" . }}
     </div>
 </div>
 
-<!-- Модальное окно для быстрых действий -->
+<!-- Модальное окно для быстрых действий 
 <div id="action-modal" class="modal">
     <div class="modal-content" style="max-width: 500px;">
         <button class="modal-close" onclick="VendERP.hideActionModal()">×</button>
         <div id="action-modal-body"></div>
     </div>
 </div>
+-->
 
 <script>
 function filterInventory() {
@@ -83,27 +83,5 @@ function filterInventory() {
     htmx.ajax('GET', url, '#warehouses-table');
 }
 
-function showQuickAction(itemId, action) {
-    const url = `/warehouses/quick-action?item_id=${itemId}&action=${action}`;
-    htmx.ajax('GET', url, '#action-modal-body');
-    document.getElementById('action-modal').style.display = 'block';
-}
-
-// Инициализация VendERP если не определена
-if (typeof VendERP === 'undefined') {
-    var VendERP = {};
-}
-
-VendERP.hideActionModal = function() {
-    document.getElementById('action-modal').style.display = 'none';
-    document.getElementById('action-modal-body').innerHTML = '';
-}
-
-// Автоматическое обновление каждые 30 секунд
-setInterval(() => {
-    if (document.visibilityState === 'visible') {
-        filterInventory();
-    }
-}, 30000);
 </script>
 {{ end }}
