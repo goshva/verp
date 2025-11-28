@@ -140,7 +140,7 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
         Secure:   false,
     })
     
-    http.Redirect(w, r, "/operations", http.StatusSeeOther)
+    http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 }
 
 func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {

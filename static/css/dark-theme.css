@@ -71,9 +71,6 @@ body.dark-theme .nav-link.active {
 
 /* Cards */
 body.dark-theme .card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow);
     backdrop-filter: blur(10px);
     transition: all 0.3s ease;
 }
