@@ -770,3 +770,11 @@ body.dark-theme .table td {
     align-items: center;
 }
 
+.stat-card-simple .stat-label {
+    font-size: 0.875rem;
+    color:var(--text-secondary);
+}
+body.dark-theme .stat-card-simple .stat-label {
+    font-weight: 600;
+    color: var(--text-primary);
+}

@@ -8,90 +8,102 @@
     <p class="page-subtitle">Общая статистика и аналитика системы</p>
 </div>
 
-<!-- Основная статистика -->
+<!-- Основная статистика с графиками -->
 <div class="card">
-    <h2 style="margin-bottom: 1.5rem;">📈 Общая статистика</h2>
+    <h2 style="margin-bottom: 1.5rem;">📈 Динамика за 30 дней</h2>
     
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
-        <!-- Статистика автоматов -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+        <!-- График доходов -->
         <div class="stat-card">
-            <div class="stat-icon">🤖</div>
-            <div class="stat-value">{{.TotalMachines}}</div>
-            <div class="stat-label">Всего автоматов</div>
+            <div class="stat-header">
+                <div class="stat-icon">💰</div>
+                <div class="stat-title">Доходы от инкассаций</div>
+            </div>
+            <div class="chart-container">
+                <canvas id="revenueChart" width="250" height="120"></canvas>
+            </div>
+            <div class="stat-trend" id="revenueTrend">Загрузка...</div>
         </div>
         
+        <!-- График операций -->
         <div class="stat-card">
-            <div class="stat-icon">🟢</div>
-            <div class="stat-value">{{.ActiveMachines}}</div>
-            <div class="stat-label">Активных автоматов</div>
+            <div class="stat-header">
+                <div class="stat-icon">📋</div>
+                <div class="stat-title">Операции в день</div>
+            </div>
+            <div class="chart-container">
+                <canvas id="operationsChart" width="250" height="120"></canvas>
+            </div>
+            <div class="stat-trend" id="operationsTrend">Загрузка...</div>
         </div>
         
+        <!-- График инвентаря -->
         <div class="stat-card">
-            <div class="stat-icon">💰</div>
-            <div class="stat-value">{{.TotalCash}}</div>
-            <div class="stat-label">Общая сумма в автоматах</div>
+            <div class="stat-header">
+                <div class="stat-icon">📦</div>
+                <div class="stat-title">Стоимость инвентаря</div>
+            </div>
+            <div class="chart-container">
+                <canvas id="inventoryChart" width="250" height="120"></canvas>
+            </div>
+            <div class="stat-trend" id="inventoryTrend">Загрузка...</div>
         </div>
         
+        <!-- График активности автоматов -->
         <div class="stat-card">
-            <div class="stat-icon">🎪</div>
-            <div class="stat-value">{{.TotalToys}}</div>
-            <div class="stat-label">Игрушек в автоматах</div>
-        </div>
-        
-        <!-- Статистика операций -->
-        <div class="stat-card">
-            <div class="stat-icon">📋</div>
-            <div class="stat-value">{{.TotalOperations}}</div>
-            <div class="stat-label">Всего операций</div>
-        </div>
-        
-        <div class="stat-card">
-            <div class="stat-icon">🔄</div>
-            <div class="stat-value">{{.RestockOperations}}</div>
-            <div class="stat-label">Пополнений</div>
-        </div>
-        
-        <div class="stat-card">
-            <div class="stat-icon">💵</div>
-            <div class="stat-value">{{.CollectionOperations}}</div>
-            <div class="stat-label">Инкассаций</div>
-        </div>
-        
-        <div class="stat-card">
-            <div class="stat-icon">🔧</div>
-            <div class="stat-value">{{.MaintenanceOperations}}</div>
-            <div class="stat-label">Обслуживаний</div>
+            <div class="stat-header">
+                <div class="stat-icon">🤖</div>
+                <div class="stat-title">Активность автоматов</div>
+            </div>
+            <div class="chart-container">
+                <canvas id="machinesChart" width="250" height="120"></canvas>
+            </div>
+            <div class="stat-trend" id="machinesTrend">Загрузка...</div>
         </div>
     </div>
 </div>
 
-<!-- Статистика складов -->
+<!-- Операции по дням недели -->
 <div class="card">
-    <h2 style="margin-bottom: 1.5rem;">🏭 Статистика складов</h2>
+    <h2 style="margin-bottom: 1.5rem;">📅 Распределение операций по дням недели</h2>
+    <div class="chart-container-large">
+        <canvas id="weeklyOperationsChart" height="250"></canvas>
+    </div>
+</div>
+
+<!-- Общая статистика -->
+<div class="card">
+    <h2 style="margin-bottom: 1.5rem;">📊 Общая статистика</h2>
     
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
-        <div class="stat-card">
-            <div class="stat-icon">💰</div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+        <div class="stat-card-simple">
+            <div class="stat-value">{{.TotalMachines}}</div>
+            <div class="stat-label">Всего автоматов</div>
+        </div>
+        
+        <div class="stat-card-simple">
+            <div class="stat-value">{{.ActiveMachines}}</div>
+            <div class="stat-label">Активных</div>
+        </div>
+        
+        <div class="stat-card-simple">
+            <div class="stat-value">{{.TotalCash}}</div>
+            <div class="stat-label">Наличные в автоматах</div>
+        </div>
+        
+        <div class="stat-card-simple">
+            <div class="stat-value">{{.TotalToys}}</div>
+            <div class="stat-label">Игрушек в автоматах</div>
+        </div>
+        
+        <div class="stat-card-simple">
+            <div class="stat-value">{{.TotalOperations}}</div>
+            <div class="stat-label">Всего операций</div>
+        </div>
+        
+        <div class="stat-card-simple">
             <div class="stat-value">{{.TotalValue}}</div>
-            <div class="stat-label">Общая стоимость инвентаря</div>
-        </div>
-        
-        <div class="stat-card">
-            <div class="stat-icon">⚠️</div>
-            <div class="stat-value">{{.LowStockCount}}</div>
-            <div class="stat-label">Позиций с низким запасом</div>
-        </div>
-        
-        <div class="stat-card">
-            <div class="stat-icon">❌</div>
-            <div class="stat-value">{{.OutOfStockCount}}</div>
-            <div class="stat-label">Отсутствующих позиций</div>
-        </div>
-        
-        <div class="stat-card">
-            <div class="stat-icon">🏭</div>
-            <div class="stat-value">{{.TotalWarehouses}}</div>
-            <div class="stat-label">Активных складов</div>
+            <div class="stat-label">Стоимость инвентаря</div>
         </div>
     </div>
 </div>
@@ -104,8 +116,11 @@
         <div style="margin-top: 1rem;">
             {{range .InventoryByType}}
             <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 0.75rem; padding: 0.5rem; border-radius: 6px;">
-                <span style="font-weight: 500;">{{.TypeName}}</span>
-                <span style="font-weight: 600; color: var(--primary);">{{.Count}} ед.</span>
+                <div>
+                    <div style="font-weight: 500;">{{.TypeName}}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">{{.Count}} ед.</div>
+                </div>
+                <span style="font-weight: 600; color: var(--primary);">{{printf "%.2f" .Value}} ₽</span>
             </div>
             {{end}}
         </div>
@@ -150,7 +165,7 @@
             </div>
             <div style="text-align: right;">
                 <div style="font-weight: 600; color: var(--warning);">{{.Quantity}}/{{.MinStockLevel}}</div>
-                <div style="font-size: 0.75rem; color: var(--text-secondary);">осталось</div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary);">осталось ({{printf "%.0f" (mult .Quantity 100.0) | percent .MinStockLevel}}%)</div>
             </div>
         </div>
         {{end}}
@@ -160,29 +175,77 @@
 
 <style>
 .stat-card {
-    text-align: center;
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .stat-card:hover {
     transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.stat-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
 }
 
 .stat-icon {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+    margin-right: 0.5rem;
 }
 
-.stat-value {
-    font-size: 2.5rem;
+.stat-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.chart-container {
+    height: 120px;
+    margin: 0.5rem 0;
+}
+
+.chart-container-large {
+    height: 250px;
+    margin: 0.5rem 0;
+}
+
+.stat-trend {
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-top: 0.5rem;
+}
+
+.stat-trend.positive {
+    color: var(--success);
+}
+
+.stat-trend.negative {
+    color: var(--danger);
+}
+
+.stat-card-simple {
+    text-align: center;
+    padding: 1rem;
+    background: var(--surface);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+.stat-card-simple .stat-value {
+    font-size: 2rem;
     font-weight: 700;
     color: var(--primary);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
 }
 
-.stat-label {
+.stat-card-simple .stat-label {
     font-size: 0.875rem;
     color: var(--text-secondary);
-    font-weight: 500;
 }
 
 .page-subtitle {
@@ -191,4 +254,215 @@
     font-size: 1.1rem;
 }
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Функция для расчета тренда
+    function calculateTrend(data) {
+        if (data.length < 2) return 0;
+        const first = data[0] || 0;
+        const last = data[data.length - 1] || 0;
+        if (first === 0) return 0;
+        return ((last - first) / first) * 100;
+    }
+
+    // Функция для форматирования тренда
+    function formatTrend(trend) {
+        const absTrend = Math.abs(trend).toFixed(1);
+        if (trend > 0) {
+            return `<span class="stat-trend positive">+${absTrend}%</span>`;
+        } else if (trend < 0) {
+            return `<span class="stat-trend negative">-${absTrend}%</span>`;
+        } else {
+            return `<span class="stat-trend">0%</span>`;
+        }
+    }
+
+    // График доходов
+    const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+    const revenueChart = new Chart(revenueCtx, {
+        type: 'line',
+        data: {
+            labels: {{.RevenueChart.Labels}},
+            datasets: {{.RevenueChart.Datasets}}
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { 
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `Доход: ${context.parsed.y.toFixed(2)} ₽`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: { 
+                    beginAtZero: true, 
+                    grid: { display: false },
+                    ticks: {
+                        callback: function(value) {
+                            return value + ' ₽';
+                        }
+                    }
+                },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+
+    // Обновляем тренд доходов
+    const revenueTrend = calculateTrend({{.RevenueChart.Datasets}}[0].data);
+    document.getElementById('revenueTrend').innerHTML = formatTrend(revenueTrend);
+
+    // График операций
+    const operationsCtx = document.getElementById('operationsChart').getContext('2d');
+    const operationsChart = new Chart(operationsCtx, {
+        type: 'line',
+        data: {
+            labels: {{.OperationsTrend.Labels}},
+            datasets: {{.OperationsTrend.Datasets}}
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { 
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `Операций: ${context.parsed.y}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: { 
+                    beginAtZero: true, 
+                    grid: { display: false },
+                    ticks: {
+                        precision: 0
+                    }
+                },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+
+    // Обновляем тренд операций
+    const operationsTrend = calculateTrend({{.OperationsTrend.Datasets}}[0].data);
+    document.getElementById('operationsTrend').innerHTML = formatTrend(operationsTrend);
+
+    // График инвентаря
+    const inventoryCtx = document.getElementById('inventoryChart').getContext('2d');
+    const inventoryChart = new Chart(inventoryCtx, {
+        type: 'line',
+        data: {
+            labels: {{.InventoryChart.Labels}},
+            datasets: {{.InventoryChart.Datasets}}
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { 
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `Стоимость: ${context.parsed.y.toFixed(2)} ₽`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: { 
+                    beginAtZero: false, 
+                    grid: { display: false },
+                    ticks: {
+                        callback: function(value) {
+                            return value + ' ₽';
+                        }
+                    }
+                },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+
+    // Обновляем тренд инвентаря
+    const inventoryTrend = calculateTrend({{.InventoryChart.Datasets}}[0].data);
+    document.getElementById('inventoryTrend').innerHTML = formatTrend(inventoryTrend);
+
+    // График активности автоматов
+    const machinesCtx = document.getElementById('machinesChart').getContext('2d');
+    const machinesChart = new Chart(machinesCtx, {
+        type: 'line',
+        data: {
+            labels: {{.MachinesActivity.Labels}},
+            datasets: {{.MachinesActivity.Datasets}}
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { 
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `Активность: ${context.parsed.y.toFixed(1)}%`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: { 
+                    beginAtZero: true,
+                    max: 100,
+                    grid: { display: false },
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+
+    // Обновляем тренд активности
+    const machinesTrend = calculateTrend({{.MachinesActivity.Datasets}}[0].data);
+    document.getElementById('machinesTrend').innerHTML = formatTrend(machinesTrend);
+
+    // График операций по дням недели
+    const weeklyCtx = document.getElementById('weeklyOperationsChart').getContext('2d');
+    new Chart(weeklyCtx, {
+        type: 'bar',
+        data: {
+            labels: {{.WeeklyOperations.Labels}},
+            datasets: {{.WeeklyOperations.Datasets}}
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    grid: { display: false }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: { display: false },
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
 {{ end }}
