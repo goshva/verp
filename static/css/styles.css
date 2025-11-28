@@ -22,7 +22,58 @@ body {
     background: #f1f5f9;
     line-height: 1.6;
 }
+        .htmx-indicator {
+            opacity: 0;
+            transition: opacity 200ms ease-in;
+        }
+        .htmx-request .htmx-indicator {
+            opacity: 1;
+        }
+        .htmx-request.htmx-indicator {
+            opacity: 1;
+        }
+        
+        /* Основной контент с фиксированным отступом */
+        .main-content {
+            margin-left: 250px; /* Фиксированный отступ для развернутого сайдбара */
+            padding: 2rem;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
+        }
+        
+        /* Дополнительные стили для мобильной адаптации */
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0 !important;
+                padding: 1rem;
+                margin-top: 70px; /* Отступ для фиксированного сайдбара с иконками */
+            }
+            
+            .page-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+            
+            .page-header h1 {
+                font-size: 1.5rem;
+            }
+        }
 
+        /* Для очень маленьких экранов */
+        @media (max-width: 480px) {
+            .main-content {
+                margin-top: 60px;
+                padding: 0.75rem;
+            }
+        }
+
+        /* Для очень-очень маленьких экранов */
+        @media (max-width: 360px) {
+            .main-content {
+                margin-top: 55px;
+            }
+        }
 /* Layout */
 .sidebar {
     width: 200px;
@@ -60,14 +111,6 @@ body {
 }
 
 /* Cards */
-.card {
-    background: white;
-    border-radius: var(--radius);
-    padding: 1.5rem;
-    box-shadow: var(--shadow);
-    margin-bottom: 1.5rem;
-    border: 1px solid var(--border);
-}
 
 .card-header {
     border-bottom: 1px solid var(--border);
@@ -377,7 +420,11 @@ body {
 
     .main-content {
         margin-left: 0;
-        padding: 1rem;
+        width: 100%;
+    }
+
+    .card {
+        padding: 0;
     }
 
     .stats-grid {
@@ -604,6 +651,13 @@ body.modal-open {
         margin: 0;
         padding: 1.5rem;
     }
+
+    .filter-drop {
+        flex-direction: column;
+        margin: auto;
+        width: 100%;
+    }
+    .filter-drop .form-select {width: 100%;}
 }
 
 .operation-restock {
@@ -631,8 +685,88 @@ body.modal-open {
 }
 
 .page-header {
-      display: flex;
+    display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 1rem;
 }
+
+/* Table container for full width with horizontal scroll */
+.table-container {
+    width: 100%;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    overflow-x: auto;
+    margin-bottom: 1.5rem;
+}
+
+/* Table styles */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    min-width: 800px;
+    /* Minimum width to ensure horizontal scroll on small screens */
+}
+
+.table th,
+.table td {
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    /* Prevent text wrapping */
+}
+
+.table th {
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+/* Dark theme specific table styles */
+body.dark-theme .table-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+}
+
+body.dark-theme .table th {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border-bottom: 2px solid var(--primary);
+}
+
+body.dark-theme .table td {
+    border-bottom: 1px solid var(--border);
+}
+
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .table-container {
+        border-radius: 0;
+        margin: 0 -1rem;
+        width: calc(100% + 2rem);
+    }
+
+    .table {
+        font-size: 0.8rem;
+    }
+
+    .table th,
+    .table td {
+        padding: 0.5rem;
+    }
+}
+
+.action-btn,
+.filter-drop {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+

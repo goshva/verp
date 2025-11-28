@@ -40,7 +40,7 @@
                     {{end}}
                 </td>
                 <td>
-                    <code style="background: var(--bg-secondary); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">
+                    <code style="padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">
                         {{.SKU}}
                     </code>
                 </td>
@@ -75,25 +75,25 @@
                     </span>
                 </td>
                 <td>
-                    <div style="display: flex; gap: 0.25rem; flex-wrap: wrap;">
-                        <button class="btn btn-primary btn-sm"
+                    <div>
+                        <button class="btn btn-primary"
                                 onclick="showQuickAction({{.ID}}, 'adjust')"
                                 title="Корректировка количества">
                             📊
                         </button>
-                        <button class="btn btn-secondary btn-sm"
+                        <button class="btn btn-secondary"
                                 onclick="showQuickAction({{.ID}}, 'transfer')"
                                 title="Переместить между складами">
                             🔄
                         </button>
-                        <button class="btn btn-warning btn-sm"
+                        <button class="btn btn-warning"
                                 hx-get="/warehouses/inventory-form?id={{.ID}}"
                                 hx-target="#modal-body"
                                 onclick="VendERP.showModal()"
                                 title="Редактировать">
                             ✏️
                         </button>
-                        <button class="btn btn-danger btn-sm"
+                        <button class="btn btn-danger"
                                 hx-delete="/warehouses/inventory-delete?id={{.ID}}"
                                 hx-target="#warehouses-table"
                                 hx-confirm="Удалить эту позицию из инвентаря?"
@@ -181,7 +181,6 @@
 }
 
 .stat-card {
-    background: var(--bg-secondary);
     padding: 1.5rem;
     border-radius: 8px;
     text-align: center;

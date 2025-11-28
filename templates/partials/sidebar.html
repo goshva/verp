@@ -1,6 +1,11 @@
 {{ define "sidebar" }}
-<div class="sidebar">
-    <h2 class="sidebar-title">VERP</h2>
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <h2 class="sidebar-title">VERP</h2>
+        <button class="sidebar-toggle" id="sidebar-toggle" title="Развернуть сайдбар">
+            →
+        </button>
+    </div>
     <nav class="sidebar-nav">
         <a href="/dashboard" class="nav-link {{if eq .Active "dashboard"}}active{{end}}" title="Дашборд">
             <span class="nav-icon">📊</span>
@@ -27,65 +32,95 @@
             <span class="nav-text">Пользователи</span>
         </a>
         <div class="theme-toggle-container">
-            <button id="theme-toggle" class="btn" title="Переключить тему">
-                <span>🌙</span>
-                <span class="theme-toggle-text">Тёмная тема</span>
+            <button id="theme-toggle" class="btn theme-toggle-btn" title="Переключить тему">
+                <span class="theme-icon">🌙</span>
             </button>
         </div>
     </nav>
 </div>
 
 <style>
-    /* Sidebar styles */
+    .sidebar-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 1rem 1rem;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 1rem;
+    }
+
+    .sidebar-toggle {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 4px;
+        color: var(--text-secondary);
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .sidebar-toggle:hover {
+        background: var(--bg-hover);
+        color: var(--text-primary);
+    }
+
+    /* Sidebar styles - по умолчанию свернут на широких экранах */
     .sidebar {
         width: 70px;
-        transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         overflow: hidden;
         display: flex;
         flex-direction: column;
         padding: 1rem 0;
         position: fixed;
         z-index: 999;
+        height: 100vh;
+        background: var(--bg-primary);
+        border-right: 1px solid var(--border);
+        transition: width 0.3s ease;
     }
 
-    .sidebar:hover {
+    .sidebar.expanded {
         width: 250px;
+    }
+
+    .sidebar.expanded .sidebar-toggle {
+        transform: rotate(180deg);
     }
 
     /* Title styles */
     .sidebar-title {
         color: var(--primary);
-        margin-bottom: 2rem;
-        text-align: center;
+        margin-bottom: 0;
         font-size: 1.1rem;
         white-space: nowrap;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        padding: 0 0.5rem;
+        transition: all 0.3s ease;
+        opacity: 0;
+        width: 0;
+        overflow: hidden;
     }
 
-    .sidebar:hover .sidebar-title {
-        text-align: left;
-        padding-left: 1rem;
+    .sidebar.expanded .sidebar-title {
+        opacity: 1;
+        width: auto;
     }
 
-    /* Navigation styles - fixed height */
+    /* Navigation styles */
     .sidebar-nav {
         display: flex;
         flex-direction: column;
-        align-items: center;
+        align-items: stretch;
         gap: 0.5rem;
         width: 100%;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         height: auto;
-        /* Высота не изменяется */
     }
 
-    .sidebar:hover .sidebar-nav {
-        align-items: stretch;
-        /* Высота остается прежней */
-    }
-
-    /* Navigation links - fixed height */
+    /* Navigation links */
     .nav-link {
         display: flex;
         align-items: center;
@@ -93,60 +128,51 @@
         color: var(--text-secondary);
         text-decoration: none;
         border-radius: 8px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
+        transition: all 0.3s ease;
         height: 44px;
-        /* Фиксированная высота */
-        justify-content: center;
-        width: 44px;
         margin: 0 auto;
+        width: 44px;
+        justify-content: center;
     }
 
-    .sidebar:hover .nav-link {
-        width: calc(100% - 1rem);
-        /* Отступы сохраняются */
+    .sidebar.expanded .nav-link {
+        padding: 0.75rem 1rem;
         justify-content: flex-start;
         margin: 0 0.5rem;
-        padding: 0.75rem 0.5rem;
-        height: 44px;
-        /* Высота не меняется */
+        width: auto;
     }
 
-    /* Icon styles - fixed position */
+    /* Icon styles */
     .nav-icon {
         font-size: 1.25rem;
         min-width: 24px;
         text-align: center;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
+        margin-right: 0;
+        transition: margin-right 0.3s ease;
+        flex-shrink: 0;
     }
 
-    .sidebar:hover .nav-icon {
-        position: relative;
-        left: 0;
-        transform: none;
-        margin-right: 0;
+    .sidebar.expanded .nav-icon {
+        margin-right: 0.75rem;
     }
 
     /* Text styles */
     .nav-text {
-        opacity: 0;
-        transform: translateX(-10px);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        width: 0;
-        overflow: hidden;
         font-size: 0.875rem;
         font-weight: 500;
         white-space: nowrap;
+        transition: all 0.3s ease;
+        flex-shrink: 0;
+        opacity: 0;
+        width: 0;
+        margin: 0;
+        overflow: hidden;
     }
 
-    .sidebar:hover .nav-text {
+    .sidebar.expanded .nav-text {
         opacity: 1;
-        transform: translateX(0);
         width: auto;
-        margin-left: 0.75rem;
+        margin-left: 0;
     }
 
     /* Hover and active states */
@@ -155,18 +181,45 @@
         color: var(--text-primary);
     }
 
-    .nav-link:hover .nav-icon {
-        transform: translateX(-50%) scale(1.1);
-    }
-
-    .sidebar:hover .nav-link:hover .nav-icon {
-        transform: scale(1.1);
-    }
-
     .nav-link.active {
         background: var(--gradient-primary);
         color: white;
         box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    /* Theme toggle styles */
+    .theme-toggle-container {
+        display: flex;
+        justify-content: center;
+        margin: 0 auto;
+    }
+
+    .theme-toggle-btn {
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+    }
+
+    .theme-icon {
+        font-size: 1.25rem;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .sidebar.expanded .theme-toggle-container {
+        justify-content: flex-start;
+        margin: 0 0.5rem;
+    }
+
+    .sidebar.expanded .theme-toggle-btn {
+        width: auto;
+        padding: 0.75rem 1rem;
+        justify-content: flex-start;
     }
 
     /* Dark theme adjustments */
@@ -177,52 +230,207 @@
 
     body.dark-theme .nav-link:hover {
         background: var(--bg-hover);
-        border-color: var(--primary);
     }
 
-
-
-    /* Responsive design */
+    /* Мобильные стили - только иконки внизу */
     @media (max-width: 768px) {
         .sidebar {
             width: 100%;
             height: auto;
-            position: relative;
-            padding: 1rem;
+            position: fixed;
+            bottom: 0;
+            top: auto;
+            left: 0;
+            padding: 0.5rem;
+            border-right: none;
+            border-top: 1px solid var(--border);
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            height: 70px;
         }
 
-        .sidebar:hover {
+        .sidebar.expanded {
             width: 100%;
+        }
+
+        .sidebar-header {
+            display: none;
+        }
+
+        .sidebar-toggle {
+            display: none;
         }
 
         .sidebar-nav {
-            align-items: stretch;
+            flex-direction: row;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0;
+            flex-wrap: nowrap;
+            justify-content: center;
+            width: auto;
+            height: 100%;
         }
 
         .nav-link {
-            width: 100%;
-            justify-content: flex-start;
-            margin: 0;
-            padding: 0.75rem 1rem;
+            width: 44px;
             height: 44px;
+            padding: 0;
+            margin: 0;
+            flex-direction: column;
+            border-radius: 8px;
+            justify-content: center;
+            align-items: center;
         }
 
         .nav-icon {
-            position: relative;
-            left: 0;
-            transform: none;
+            margin-right: 0;
+            font-size: 1.25rem;
         }
 
         .nav-text {
-            opacity: 1;
-            transform: translateX(0);
-            width: auto;
-            margin-left: 0.75rem;
+            display: none;
         }
 
-        .sidebar:hover~.main-content {
-            margin-left: 0;
+        .theme-toggle-container {
+            margin-left: 0.5rem;
+            margin: 0;
+        }
+
+        .theme-toggle-btn {
+            width: 44px;
+            height: 44px;
+            justify-content: center;
+        }
+    }
+
+    /* Для очень маленьких экранов */
+    @media (max-width: 480px) {
+        .sidebar {
+            padding: 0.4rem;
+            height: 60px;
+        }
+
+        .nav-link {
+            width: 40px;
+            height: 40px;
+        }
+
+        .nav-icon {
+            font-size: 1.1rem;
+        }
+
+        .theme-toggle-btn {
+            width: 40px;
+            height: 40px;
+        }
+
+        .sidebar-nav {
+            gap: 0.3rem;
+        }
+    }
+
+    /* Для очень-очень маленьких экранов */
+    @media (max-width: 360px) {
+        .sidebar {
+            padding: 0.3rem;
+            height: 55px;
+        }
+
+        .nav-link {
+            width: 36px;
+            height: 36px;
+        }
+
+        .nav-icon {
+            font-size: 1rem;
+        }
+
+        .theme-toggle-btn {
+            width: 36px;
+            height: 36px;
+        }
+
+        .sidebar-nav {
+            gap: 0.2rem;
         }
     }
 </style>
+
+<script>
+    // Функция для инициализации сайдбара
+    function initSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        const mainContent = document.querySelector('.main-content');
+
+        if (!sidebar || !sidebarToggle || !mainContent) return;
+
+        // На широких экранах по умолчанию свернут
+        if (window.innerWidth > 768) {
+            const savedState = localStorage.getItem('sidebarExpanded');
+            if (savedState === 'true') {
+                sidebar.classList.add('expanded');
+                sidebarToggle.title = 'Свернуть сайдбар';
+                sidebarToggle.innerHTML = '←';
+                mainContent.style.marginLeft = '250px';
+            } else {
+                sidebar.classList.remove('expanded');
+                sidebarToggle.title = 'Развернуть сайдбар';
+                sidebarToggle.innerHTML = '→';
+                mainContent.style.marginLeft = '70px';
+                // Сохраняем состояние свернутым по умолчанию
+                localStorage.setItem('sidebarExpanded', 'false');
+            }
+        } else {
+            // На мобильных - сбрасываем стили
+            mainContent.style.marginLeft = '0';
+            mainContent.style.marginBottom = '70px'; // Отступ снизу для сайдбара
+        }
+
+        // Обработчик клика по кнопке
+        sidebarToggle.addEventListener('click', function () {
+            if (window.innerWidth > 768) {
+                const currentlyExpanded = sidebar.classList.contains('expanded');
+
+                if (currentlyExpanded) {
+                    // Сворачиваем
+                    sidebar.classList.remove('expanded');
+                    sidebarToggle.title = 'Развернуть сайдбар';
+                    sidebarToggle.innerHTML = '→';
+                    mainContent.style.marginLeft = '70px';
+                    localStorage.setItem('sidebarExpanded', 'false');
+                } else {
+                    // Разворачиваем
+                    sidebar.classList.add('expanded');
+                    sidebarToggle.title = 'Свернуть сайдбар';
+                    sidebarToggle.innerHTML = '←';
+                    mainContent.style.marginLeft = '250px';
+                    localStorage.setItem('sidebarExpanded', 'true');
+                }
+            }
+        });
+
+        // Обработчик изменения размера окна
+        window.addEventListener('resize', function () {
+            if (window.innerWidth > 768) {
+                const isExpanded = sidebar.classList.contains('expanded');
+                mainContent.style.marginLeft = isExpanded ? '250px' : '70px';
+                mainContent.style.marginBottom = '0';
+            } else {
+                mainContent.style.marginLeft = '0';
+                mainContent.style.marginBottom = '70px';
+            }
+        });
+    }
+
+    // Инициализируем при загрузке DOM
+    document.addEventListener('DOMContentLoaded', initSidebar);
+
+    // Также инициализируем при обновлении контента HTMX
+    document.addEventListener('htmx:afterSwap', initSidebar);
+</script>
 {{ end }}

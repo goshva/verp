@@ -5,7 +5,7 @@
 {{ define "content" }}
 <div class="page-header">
     <h1>🏭 Склады</h1>
-    <div style="display: flex; gap: 1rem; align-items: center;">
+    <div  class="action-btn" >
         <button class="btn btn-primary" 
                 hx-get="/warehouses/form" 
                 hx-target="#modal-body"
@@ -24,8 +24,8 @@
 <!-- Фильтры и статистика -->
 <div class="card" style="margin-bottom: 1.5rem;">
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-        <div style="display: flex; gap: 1rem; align-items: center;">
-            <select id="warehouse-filter" class="form-select" style="width: 200px;"
+        <div class="filter-drop" >
+            <select id="warehouse-filter" class="form-select" 
                     onchange="filterInventory()">
                 <option value="">Все склады</option>
                 {{range .Warehouses}}
@@ -33,7 +33,7 @@
                 {{end}}
             </select>
             
-            <select id="category-filter" class="form-select" style="width: 200px;"
+            <select id="category-filter" class="form-select" 
                     onchange="filterInventory()">
                 <option value="">Все категории</option>
                 <option value="vending_machine">Автоматы</option>
@@ -41,7 +41,7 @@
                 <option value="capsule">Капсулы</option>
             </select>
             
-            <select id="stock-filter" class="form-select" style="width: 200px;"
+            <select id="stock-filter" class="form-select" 
                     onchange="filterInventory()">
                 <option value="">Все позиции</option>
                 <option value="low">Низкий запас</option>
