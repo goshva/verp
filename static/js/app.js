@@ -41,13 +41,7 @@ const VendERP = {
 
     // Setup event listeners
     setupEventListeners: function() {
-        // Close modal when clicking outside
-        document.addEventListener('click', function(e) {
-            const modal = document.getElementById('modal');
-            if (e.target === modal) {
-                VendERP.hideModal();
-            }
-        });
+
 
         // Close modal with Escape key
         document.addEventListener('keydown', function(e) {

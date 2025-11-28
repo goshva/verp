@@ -370,7 +370,7 @@
         if (!sidebar || !sidebarToggle || !mainContent) return;
 
         // На широких экранах по умолчанию свернут
-        if (window.innerWidth > 768) {
+/*        if (window.innerWidth > 768) {
             const savedState = localStorage.getItem('sidebarExpanded');
             if (savedState === 'true') {
                 sidebar.classList.add('expanded');
@@ -390,7 +390,7 @@
             mainContent.style.marginLeft = '0';
             mainContent.style.marginBottom = '70px'; // Отступ снизу для сайдбара
         }
-
+*/
         // Обработчик клика по кнопке
         sidebarToggle.addEventListener('click', function () {
             if (window.innerWidth > 768) {
@@ -415,6 +415,7 @@
         });
 
         // Обработчик изменения размера окна
+/*        
         window.addEventListener('resize', function () {
             if (window.innerWidth > 768) {
                 const isExpanded = sidebar.classList.contains('expanded');
@@ -425,6 +426,7 @@
                 mainContent.style.marginBottom = '70px';
             }
         });
+*/        
     }
 
     // Инициализируем при загрузке DOM

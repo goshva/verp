@@ -37,7 +37,7 @@
         </div>
     </div>
     
-    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
         <div class="form-group">
             <label class="form-label">Вместимость игрушек</label>
             <input type="number" name="capacity_toys" value="{{.Machine.CapacityToys}}" class="form-input" min="0">
@@ -47,14 +47,19 @@
             <label class="form-label">Текущее кол-во игрушек</label>
             <input type="number" name="current_toys_count" value="{{.Machine.CurrentToysCount}}" class="form-input" min="0">
         </div>
-        
+      
+    </div>
+     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
         <div class="form-group">
             <label class="form-label">Наличные (₽)</label>
             <input type="number" step="0.01" name="cash_amount" value="{{.Machine.CashAmount}}" class="form-input" min="0">
+        </div>        
+        <div class="form-group">
+            <label class="form-label">Дата установки</label>
+            <input type="date" name="installation_date" value="{{if not .Machine.InstallationDate.IsZero}}{{.Machine.InstallationDate.Format "2006-01-02"}}{{end}}" class="form-input">
         </div>
-    </div>
-    
-    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+    </div>   
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
         <div class="form-group">
             <label class="form-label">Дата последнего обслуживания</label>
             <input type="date" name="last_maintenance_date" value="{{if not .Machine.LastMaintenanceDate.IsZero}}{{.Machine.LastMaintenanceDate.Format "2006-01-02"}}{{end}}" class="form-input">
@@ -63,11 +68,6 @@
         <div class="form-group">
             <label class="form-label">Дата следующего обслуживания</label>
             <input type="date" name="next_maintenance_date" value="{{if not .Machine.NextMaintenanceDate.IsZero}}{{.Machine.NextMaintenanceDate.Format "2006-01-02"}}{{end}}" class="form-input">
-        </div>
-        
-        <div class="form-group">
-            <label class="form-label">Дата установки</label>
-            <input type="date" name="installation_date" value="{{if not .Machine.InstallationDate.IsZero}}{{.Machine.InstallationDate.Format "2006-01-02"}}{{end}}" class="form-input">
         </div>
     </div>
     
