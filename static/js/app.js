@@ -140,7 +140,8 @@ function showModal() {
 function hideModal() {
     VendERP.hideModal();
 }
-
+    document.getElementById('theme-toggle').addEventListener('click', function() {
+  document.body.classList.toggle('dark-theme');})
 // Override any existing hideModal functions that might be loaded later
 window.hideModal = VendERP.hideModal;
 window.showModal = VendERP.showModal;

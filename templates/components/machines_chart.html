@@ -1,0 +1,311 @@
+{{ define "machines_chart.html" }}
+<div class="machines-chart-wrapper">
+    <div class="machines-chart-header">
+        <div class="machines-chart-title">
+            <div class="stat-icon">🤖</div>
+            <div class="machines-chart-title-text">
+                <div class="stat-value">{{.TotalMachines}}</div>
+                <div class="stat-label">Всего автоматов</div>
+            </div>
+        </div>
+        <div class="machines-chart-period">
+            <span class="chart-period-label">📅 30 дней</span>
+        </div>
+    </div>
+    
+    <div class="machines-chart-container">
+        {{if .ChartData}}
+        <div class="machines-chart" id="machinesChart">
+            <div class="chart-grid">
+                {{range .ChartData}}
+                <div class="chart-column">
+                    <div class="chart-bar-wrapper">
+                        <div class="chart-bar" style="height: {{.Percentage}}%;" 
+                             data-count="{{.Count}}" 
+                             data-date="{{.Label}}"
+                             title="{{.Date}}: {{.Count}} автоматов"></div>
+                    </div>
+                    <div class="chart-label">{{.Label}}</div>
+                </div>
+                {{end}}
+            </div>
+        </div>
+        {{else}}
+        <div class="chart-no-data">
+            📊 Нет данных за последний месяц
+        </div>
+        {{end}}
+    </div>
+    
+    {{if .ChartData}}
+    <div class="machines-chart-stats">
+        <div class="chart-stat-item">
+            <span class="chart-stat-label">За месяц:</span>
+            <span class="chart-stat-value {{if .MonthlyChangePositive}}positive{{else}}negative{{end}}">
+                {{if .MonthlyChangePositive}}+{{end}}{{.MonthlyChange}} 
+            </span>
+        </div>
+        <div class="chart-stat-item">
+            <span class="chart-stat-label">Тренд:</span>
+            <span class="chart-stat-trend {{.TrendClass}}">
+                {{.TrendIcon}} {{.TrendText}}
+            </span>
+        </div>
+    </div>
+    {{end}}
+</div>
+
+<style>
+.machines-chart-wrapper {
+    background: white;
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-color);
+    height: 100%;
+}
+
+.machines-chart-wrapper:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+}
+
+.machines-chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.machines-chart-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.machines-chart-title-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-icon {
+    font-size: 2rem;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(79, 70, 229, 0.1);
+    border-radius: 10px;
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary);
+    line-height: 1;
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.machines-chart-period {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    padding: 0.25rem 0.5rem;
+    background: var(--bg-secondary);
+    border-radius: 6px;
+}
+
+.machines-chart-container {
+    height: 160px;
+    margin: 1rem 0;
+}
+
+.chart-grid {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    height: 120px;
+    padding: 0 0.5rem;
+    position: relative;
+}
+
+.chart-grid::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--border-color);
+}
+
+.chart-grid::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--border-color);
+}
+
+.chart-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    position: relative;
+}
+
+.chart-bar-wrapper {
+    flex: 1;
+    width: 20px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    position: relative;
+}
+
+.chart-bar {
+    width: 12px;
+    background: linear-gradient(180deg, var(--primary) 0%, rgba(79, 70, 229, 0.8) 100%);
+    border-radius: 4px 4px 0 0;
+    transition: all 0.3s ease;
+    position: relative;
+    min-height: 2px;
+}
+
+.chart-bar:hover {
+    width: 16px;
+    background: linear-gradient(180deg, var(--primary) 0%, #4F46E5 100%);
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
+    cursor: pointer;
+}
+
+.chart-bar::after {
+    content: attr(data-count);
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    white-space: nowrap;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 1px solid var(--border-color);
+}
+
+.chart-bar:hover::after {
+    opacity: 1;
+}
+
+.chart-label {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+    text-align: center;
+    font-weight: 500;
+}
+
+.chart-no-data {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.machines-chart-stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    font-size: 0.875rem;
+}
+
+.chart-stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.chart-stat-label {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.chart-stat-value {
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.chart-stat-value.positive {
+    color: var(--success);
+}
+
+.chart-stat-value.negative {
+    color: var(--danger);
+}
+
+.chart-stat-trend {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.chart-stat-trend.up {
+    background: rgba(34, 197, 94, 0.1);
+    color: var(--success);
+}
+
+.chart-stat-trend.down {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger);
+}
+
+.chart-stat-trend.stable {
+    background: rgba(156, 163, 175, 0.1);
+    color: var(--text-secondary);
+}
+
+@media (prefers-color-scheme: dark) {
+    .machines-chart-wrapper {
+        background: var(--bg-secondary);
+        border-color: var(--border-color-dark);
+    }
+    
+    .stat-icon {
+        background: rgba(139, 92, 246, 0.15);
+    }
+    
+    .chart-bar {
+        background: linear-gradient(180deg, var(--primary) 0%, rgba(139, 92, 246, 0.9) 100%);
+    }
+    
+    .chart-bar::after {
+        background: var(--bg-primary);
+        color: var(--text-primary);
+    }
+}
+</style>
+{{ end }}

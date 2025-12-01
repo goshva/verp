@@ -12,14 +12,20 @@
 <div class="card">
     <h2 style="margin-bottom: 1.5rem;">📈 Общая статистика</h2>
     
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
-        <!-- Статистика автоматов -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+        <!-- Компонент графика автоматов -->
+        {{ if .ChartData }}
+        {{ template "machines_chart.html" . }}
+        {{ else }}
+        <!-- Fallback: простая карточка -->
         <div class="stat-card">
             <div class="stat-icon">🤖</div>
             <div class="stat-value">{{.TotalMachines}}</div>
             <div class="stat-label">Всего автоматов</div>
         </div>
+        {{ end }}
         
+        <!-- Остальные статистические карточки -->
         <div class="stat-card">
             <div class="stat-icon">🟢</div>
             <div class="stat-value">{{.ActiveMachines}}</div>
@@ -161,10 +167,17 @@
 <style>
 .stat-card {
     text-align: center;
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-color);
 }
 
 .stat-card:hover {
     transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .stat-icon {
@@ -177,6 +190,7 @@
     font-weight: 700;
     color: var(--primary);
     margin-bottom: 0.5rem;
+    line-height: 1;
 }
 
 .stat-label {
@@ -189,6 +203,61 @@
     color: var(--text-secondary);
     margin-top: 0.5rem;
     font-size: 1.1rem;
+}
+
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border: 1px solid var(--border-color);
+    margin-bottom: 1.5rem;
+}
+
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.page-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+}
+
+.btn-secondary {
+    background: var(--secondary);
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: var(--secondary-dark);
+}
+
+.btn-warning {
+    background: var(--warning);
+    color: white;
+}
+
+.btn-warning:hover {
+    background: var(--warning-dark);
 }
 </style>
 {{ end }}
