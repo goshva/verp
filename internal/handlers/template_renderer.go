@@ -94,6 +94,7 @@ func (tr *TemplateRenderer) loadTemplates() {
 		"templates/partials/inventory_form.html",
 		"templates/partials/quick_action_form.html",
 		"templates/components/machines_chart.html",
+		"templates/components/operations_chart.html",
 	}
 
 	// Проверяем существование файлов перед добавлением

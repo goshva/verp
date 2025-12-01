@@ -69,14 +69,8 @@ body.dark-theme .nav-link.active {
     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
-/* Cards */
-body.dark-theme .card {
-    backdrop-filter: blur(10px);
-    transition: all 0.3s ease;
-}
 
 body.dark-theme .card:hover {
-    transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
     border-color: var(--primary);
 }

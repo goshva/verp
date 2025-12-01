@@ -14,9 +14,10 @@
 
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
         <!-- Статистика автоматов -->
-        {{ if .ChartData }}
+
         {{ template "machines_chart.html" . }}
-        {{ end }}
+        {{ template "operations_chart.html" . }}
+
 
         <div class="stat-card">
             <div class="stat-icon">🟢</div>

@@ -17,11 +17,14 @@ func setupRoutes(db *sql.DB) http.Handler {
 	machines := handlers.NewMachineHandler(db, renderer)
 	locations := handlers.NewLocationHandler(db, renderer)
 	operations := handlers.NewOperationHandler(db, renderer)
-	dashboard := handlers.NewDashboardHandler(db, renderer)
-	warehouses := handlers.NewWarehouseHandler(db, renderer)
 	
-	// Chart handler
-	chartHandler := handlers.NewChartHandler(db) // Добавьте эту строку
+	// Chart handler - создаем первым
+	chartHandler := handlers.NewChartHandler(db)
+	
+	// Dashboard handler - передаем chartHandler
+	dashboard := handlers.NewDashboardHandler(db, renderer, chartHandler)
+	
+	warehouses := handlers.NewWarehouseHandler(db, renderer)
 
 	// Auth middleware closure
 	requireAuth := func(next http.HandlerFunc) http.HandlerFunc {

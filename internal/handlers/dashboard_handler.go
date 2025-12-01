@@ -8,16 +8,16 @@ import (
 )
 
 type DashboardHandler struct {
-    db          *sql.DB
-    renderer    *TemplateRenderer
-    chartHandler *ChartHandler
+    db           *sql.DB
+    renderer     *TemplateRenderer
+    chartHandler *ChartHandler // Используйте существующий ChartHandler
 }
 
-func NewDashboardHandler(db *sql.DB, renderer *TemplateRenderer) *DashboardHandler {
+func NewDashboardHandler(db *sql.DB, renderer *TemplateRenderer, chartHandler *ChartHandler) *DashboardHandler {
     return &DashboardHandler{
-        db:          db,
-        renderer:    renderer,
-        chartHandler: NewChartHandler(db),
+        db:           db,
+        renderer:     renderer,
+        chartHandler: chartHandler,
     }
 }
 
@@ -53,7 +53,7 @@ func (h *DashboardHandler) ShowDashboard(w http.ResponseWriter, r *http.Request)
         machinesChart = &ChartResponse{Total: 0}
     }
     
-    // Получаем данные для графика операций (опционально)
+    // Получаем данные для графика операций
     operationsChart, err := h.chartHandler.GetOperationsChartData(30)
     if err != nil {
         fmt.Printf("DEBUG: Error getting operations chart data: %v\n", err)
@@ -95,17 +95,17 @@ func (h *DashboardHandler) ShowDashboard(w http.ResponseWriter, r *http.Request)
         "RestockOperations":   restockOperations,
         "CollectionOperations": collectionOperations,
         "MaintenanceOperations": maintenanceOperations,
-        "ChartData":           machinesChart.Series[0].Data,
-        "MonthlyChange":       machinesChart.Change,
-        "MonthlyChangePercent": machinesChart.ChangePercent,
         "TrendClass":          trendClass,
         "TrendText":           trendText,
         "TrendIcon":           trendIcon,
         "MonthlyChangePositive": machinesChart.Change > 0,
         "Active":              "dashboard",
         "Title":               "Дашборд",
+        // Добавляем данные для графиков
         "MachinesChart":       machinesChart,
         "OperationsChart":     operationsChart,
+        "MachinesChange":      machinesChart.Change,
+        "OperationsChange":    operationsChart.Change,
     }
     
     h.renderer.Render(w, "dashboard_page.html", data)

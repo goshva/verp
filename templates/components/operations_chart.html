@@ -1,58 +1,57 @@
-{{ define "machines_chart.html" }}
-<div class="chart-mini" id="machines-chart-mini" onclick="VendERP.charts.machines.expand()" title="Нажмите для разворачивания">
+{{ define "operations_chart.html" }}
+<div class="chart-mini" id="operations-chart-mini" onclick="VendERP.charts.operations.expand()" title="Нажмите для разворачивания">
     <div class="mini-header">
         <div class="mini-title">
-            <span class="mini-icon">📈</span>
-            <span class="mini-text">Автоматы</span>
+            <span class="mini-icon">📋</span>
+            <span class="mini-text">Операции</span>
         </div>
-        <div class="mini-value" id="machines-mini-total">-</div>
+        <div class="mini-value" id="operations-mini-total">-</div>
     </div>
     <div class="mini-canvas">
-        <canvas id="machines-mini-chart"></canvas>
+        <canvas id="operations-mini-chart"></canvas>
     </div>
 </div>
 
-<div class="chart-fullscreen" id="machines-chart-fullscreen" style="display: none;">
-    <div class="fullscreen-overlay" onclick="VendERP.charts.machines.collapse()"></div>
+<div class="chart-fullscreen" id="operations-chart-fullscreen" style="display: none;">
+    <div class="fullscreen-overlay" onclick="VendERP.charts.operations.collapse()"></div>
     <div class="fullscreen-content">
         <div class="fullscreen-header">
             <div class="fullscreen-title">
-                <span class="fullscreen-icon">🤖</span>
-                <h2>Динамика автоматов</h2>
-                <span class="fullscreen-period" id="machines-full-period">30 дней</span>
+                <span class="fullscreen-icon">📋</span>
+                <h2>Динамика операций</h2>
+                <span class="fullscreen-period" id="operations-full-period">30 дней</span>
             </div>
-            <button class="close-btn" onclick="VendERP.charts.machines.collapse()">×</button>
+            <button class="close-btn" onclick="VendERP.charts.operations.collapse()">×</button>
         </div>
         
         <div class="fullscreen-stats">
             <div class="stat-card">
-                <div class="stat-label">Всего автоматов</div>
-                <div class="stat-value" id="machines-full-total">-</div>
+                <div class="stat-label">Всего операций</div>
+                <div class="stat-value" id="operations-full-total">-</div>
             </div>
             <div class="stat-card">
                 <div class="stat-label">Изменение</div>
-                <div class="stat-value" id="machines-full-change">-</div>
+                <div class="stat-value" id="operations-full-change">-</div>
             </div>
             <div class="stat-card">
                 <div class="stat-label">Тренд</div>
-                <div class="stat-trend" id="machines-full-trend">-</div>
+                <div class="stat-trend" id="operations-full-trend">-</div>
             </div>
         </div>
         
         <div class="fullscreen-canvas">
-            <canvas id="machines-full-chart"></canvas>
+            <canvas id="operations-full-chart"></canvas>
         </div>
         
         <div class="fullscreen-footer">
-            <div class="data-info" id="machines-data-info">Загрузка данных...</div>
+            <div class="data-info" id="operations-data-info">Загрузка данных...</div>
             <div class="controls">
-                <button onclick="VendERP.charts.machines.refresh()" class="refresh-btn">🔄 Обновить</button>
-                <button onclick="VendERP.charts.machines.collapse()" class="collapse-btn">Свернуть</button>
+                <button onclick="VendERP.charts.operations.refresh()" class="refresh-btn">🔄 Обновить</button>
+                <button onclick="VendERP.charts.operations.collapse()" class="collapse-btn">Свернуть</button>
             </div>
         </div>
     </div>
 </div>
-
 
 <style>
 /* Мини-версия */
