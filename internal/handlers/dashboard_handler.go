@@ -8,12 +8,17 @@ import (
 )
 
 type DashboardHandler struct {
-    db       *sql.DB
-    renderer *TemplateRenderer
+    db          *sql.DB
+    renderer    *TemplateRenderer
+    chartHandler *ChartHandler
 }
 
 func NewDashboardHandler(db *sql.DB, renderer *TemplateRenderer) *DashboardHandler {
-    return &DashboardHandler{db: db, renderer: renderer}
+    return &DashboardHandler{
+        db:          db,
+        renderer:    renderer,
+        chartHandler: NewChartHandler(db),
+    }
 }
 
 func (h *DashboardHandler) ShowDashboard(w http.ResponseWriter, r *http.Request) {
@@ -40,6 +45,20 @@ func (h *DashboardHandler) ShowDashboard(w http.ResponseWriter, r *http.Request)
         return
     }
     
+    // Получаем данные для графика автоматов
+    machinesChart, err := h.chartHandler.GetMachinesChartData()
+    if err != nil {
+        fmt.Printf("DEBUG: Error getting machines chart data: %v\n", err)
+        // Создаем пустую структуру для избежания ошибок в шаблоне
+        machinesChart = &ChartResponse{Total: 0}
+    }
+    
+    // Получаем данные для графика операций (опционально)
+    operationsChart, err := h.chartHandler.GetOperationsChartData(30)
+    if err != nil {
+        fmt.Printf("DEBUG: Error getting operations chart data: %v\n", err)
+    }
+    
     // Статистика автоматов
     var totalMachines, activeMachines int
     var totalCash float64
@@ -57,6 +76,9 @@ func (h *DashboardHandler) ShowDashboard(w http.ResponseWriter, r *http.Request)
     h.db.QueryRow("SELECT COUNT(*) FROM vending_operations WHERE operation_type = 'restock'").Scan(&restockOperations)
     h.db.QueryRow("SELECT COUNT(*) FROM vending_operations WHERE operation_type = 'collection'").Scan(&collectionOperations)
     h.db.QueryRow("SELECT COUNT(*) FROM vending_operations WHERE operation_type = 'maintenance'").Scan(&maintenanceOperations)
+    
+    // Получаем информацию о тренде
+    trendClass, trendText, trendIcon := h.chartHandler.GetTrendInfo(machinesChart.Trend)
 
     data := map[string]interface{}{
         "TotalValue":          fmt.Sprintf("%.2f ₽", stats.TotalValue),
@@ -73,8 +95,17 @@ func (h *DashboardHandler) ShowDashboard(w http.ResponseWriter, r *http.Request)
         "RestockOperations":   restockOperations,
         "CollectionOperations": collectionOperations,
         "MaintenanceOperations": maintenanceOperations,
+        "ChartData":           machinesChart.Series[0].Data,
+        "MonthlyChange":       machinesChart.Change,
+        "MonthlyChangePercent": machinesChart.ChangePercent,
+        "TrendClass":          trendClass,
+        "TrendText":           trendText,
+        "TrendIcon":           trendIcon,
+        "MonthlyChangePositive": machinesChart.Change > 0,
         "Active":              "dashboard",
         "Title":               "Дашборд",
+        "MachinesChart":       machinesChart,
+        "OperationsChart":     operationsChart,
     }
     
     h.renderer.Render(w, "dashboard_page.html", data)

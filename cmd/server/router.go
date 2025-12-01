@@ -13,12 +13,15 @@ func setupRoutes(db *sql.DB) http.Handler {
 
 	// Handlers
 	auth := handlers.NewAuthHandler(db, renderer)
-
 	users := handlers.NewUserHandler(db, renderer)
 	machines := handlers.NewMachineHandler(db, renderer)
 	locations := handlers.NewLocationHandler(db, renderer)
 	operations := handlers.NewOperationHandler(db, renderer)
-	dashboard := handlers.NewDashboardHandler(db, renderer) // Добавлен дашборд
+	dashboard := handlers.NewDashboardHandler(db, renderer)
+	warehouses := handlers.NewWarehouseHandler(db, renderer)
+	
+	// Chart handler
+	chartHandler := handlers.NewChartHandler(db) // Добавьте эту строку
 
 	// Auth middleware closure
 	requireAuth := func(next http.HandlerFunc) http.HandlerFunc {
@@ -36,7 +39,7 @@ func setupRoutes(db *sql.DB) http.Handler {
 	mux.HandleFunc("/auth/signin", auth.SignIn)
 	mux.HandleFunc("/auth/signup", auth.SignUp)
 	mux.HandleFunc("/auth/signout", auth.SignOut)
-    mux.HandleFunc("/dashboard", requireAuth(dashboard.ShowDashboard)) // Добавлен маршрут дашборда
+	mux.HandleFunc("/dashboard", requireAuth(dashboard.ShowDashboard))
 
 	mux.HandleFunc("/accounts", requireAuth(users.ListUsers))
 	mux.HandleFunc("/accounts/form", requireAuth(users.GetUserForm))
@@ -58,7 +61,6 @@ func setupRoutes(db *sql.DB) http.Handler {
 	mux.HandleFunc("/operations/save", requireAuth(operations.SaveOperation))
 	mux.HandleFunc("/operations/delete", requireAuth(operations.DeleteOperation))
 
-	warehouses := handlers.NewWarehouseHandler(db, renderer)
 	mux.HandleFunc("/warehouses", requireAuth(warehouses.ListWarehouses))
 	mux.HandleFunc("/warehouses/filter", requireAuth(warehouses.ListWarehouses))
 	mux.HandleFunc("/warehouses/form", requireAuth(warehouses.GetWarehouseForm))
@@ -68,6 +70,13 @@ func setupRoutes(db *sql.DB) http.Handler {
 	mux.HandleFunc("/warehouses/inventory-delete", requireAuth(warehouses.DeleteInventory))
 	mux.HandleFunc("/warehouses/quick-action", requireAuth(warehouses.GetQuickActionForm))
 	mux.HandleFunc("/warehouses/quick-action-execute", requireAuth(warehouses.ExecuteQuickAction))
+
+	// API routes for charts
+	mux.HandleFunc("/api/charts/machines", requireAuth(chartHandler.HandleMachinesChart))
+	mux.HandleFunc("/api/charts/operations", requireAuth(chartHandler.HandleOperationsChart))
+	mux.HandleFunc("/api/charts/revenue", requireAuth(chartHandler.HandleRevenueChart))
+	mux.HandleFunc("/api/charts/inventory", requireAuth(chartHandler.HandleInventoryChart))
+
 	// Static files
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 

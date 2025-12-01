@@ -1,0 +1,518 @@
+{{ define "machines_chart.html" }}
+<div class="chart-mini" id="chart-mini" onclick="expandChart()" title="Нажмите для разворачивания">
+    <div class="mini-header">
+        <div class="mini-title">
+            <span class="mini-icon">📈</span>
+            <span class="mini-text">Автоматы</span>
+        </div>
+        <div class="mini-value" id="mini-total">-</div>
+    </div>
+    <div class="mini-canvas">
+        <canvas id="mini-chart"></canvas>
+    </div>
+</div>
+
+<div class="chart-fullscreen" id="chart-fullscreen" style="display: none;">
+    <div class="fullscreen-overlay" onclick="collapseChart()"></div>
+    <div class="fullscreen-content">
+        <div class="fullscreen-header">
+            <div class="fullscreen-title">
+                <span class="fullscreen-icon">🤖</span>
+                <h2>Динамика автоматов</h2>
+                <span class="fullscreen-period" id="full-period">30 дней</span>
+            </div>
+            <button class="close-btn" onclick="collapseChart()">×</button>
+        </div>
+        
+        <div class="fullscreen-stats">
+            <div class="stat-card">
+                <div class="stat-label">Всего автоматов</div>
+                <div class="stat-value" id="full-total">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Изменение</div>
+                <div class="stat-value" id="full-change">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Тренд</div>
+                <div class="stat-trend" id="full-trend">-</div>
+            </div>
+        </div>
+        
+        <div class="fullscreen-canvas">
+            <canvas id="full-chart"></canvas>
+        </div>
+        
+        <div class="fullscreen-footer">
+            <div class="data-info" id="data-info">Загрузка данных...</div>
+            <div class="controls">
+                <button onclick="refreshData()" class="refresh-btn">🔄 Обновить</button>
+                <button onclick="collapseChart()" class="collapse-btn">Свернуть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let chartData = null;
+let miniChart = null;
+let fullChart = null;
+
+// Загрузка данных
+async function loadChartData() {
+    try {
+        const res = await fetch('/api/charts/machines');
+        if (!res.ok) throw new Error('Ошибка загрузки');
+        chartData = await res.json();
+        updateUI();
+    } catch (err) {
+        console.error('Ошибка:', err);
+        showError();
+    }
+}
+
+// Обновление интерфейса
+function updateUI() {
+    if (!chartData) return;
+    
+    const series = chartData.series[0];
+    const labels = chartData.labels;
+    const counts = series.data.map(d => d.count);
+    
+    // Мини-график
+    document.getElementById('mini-total').textContent = chartData.total;
+    updateMiniChart(labels, counts, series.color);
+    
+    // Полноэкранный график
+    document.getElementById('full-total').textContent = chartData.total;
+    document.getElementById('full-period').textContent = chartData.period;
+    
+    const change = chartData.change >= 0 ? `+${chartData.change}` : chartData.change;
+    document.getElementById('full-change').textContent = change;
+    document.getElementById('full-change').className = `stat-value ${chartData.change >= 0 ? 'positive' : 'negative'}`;
+    
+    const trend = getTrendInfo(chartData.trend);
+    document.getElementById('full-trend').innerHTML = `${trend.icon} ${trend.text}`;
+    document.getElementById('full-trend').className = `stat-trend ${trend.class}`;
+    
+    document.getElementById('data-info').textContent = 
+        `Данные за ${chartData.period} • Обновлено: ${new Date().toLocaleTimeString('ru-RU')}`;
+}
+
+// Мини-график
+function updateMiniChart(labels, data, color) {
+    const canvas = document.getElementById('mini-chart');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    
+    if (miniChart) miniChart.destroy();
+    
+    miniChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels.filter((_, i) => i % 3 === 0), // Каждую 3-ю метку
+            datasets: [{
+                data: data.filter((_, i) => i % 3 === 0),
+                borderColor: color,
+                backgroundColor: color + '20',
+                borderWidth: 1.5,
+                fill: false,
+                tension: 0.3,
+                pointRadius: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { x: { display: false }, y: { display: false } }
+        }
+    });
+}
+
+// Полноэкранный график
+function updateFullChart() {
+    const canvas = document.getElementById('full-chart');
+    if (!canvas || !chartData) return;
+    
+    const ctx = canvas.getContext('2d');
+    const series = chartData.series[0];
+    const labels = chartData.labels;
+    const counts = series.data.map(d => d.count);
+    const dates = series.data.map(d => d.date);
+    
+    if (fullChart) fullChart.destroy();
+    
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, series.color + 'CC');
+    gradient.addColorStop(1, series.color + '22');
+    
+    fullChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Автоматы',
+                data: counts,
+                borderColor: series.color,
+                backgroundColor: gradient,
+                borderWidth: 3,
+                fill: true,
+                tension: 0.3,
+                pointBackgroundColor: series.color,
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => `${dates[ctx.dataIndex]}: ${ctx.raw} автоматов`
+                    }
+                }
+            },
+            scales: {
+                x: { grid: { display: false } },
+                y: { beginAtZero: true }
+            }
+        }
+    });
+}
+
+// Разворачивание/сворачивание
+function expandChart() {
+    document.getElementById('chart-fullscreen').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+    setTimeout(updateFullChart, 100);
+}
+
+function collapseChart() {
+    document.getElementById('chart-fullscreen').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+// Вспомогательные функции
+function getTrendInfo(trend) {
+    if (trend === 1) return { class: 'up', icon: '📈', text: 'Рост' };
+    if (trend === -1) return { class: 'down', icon: '📉', text: 'Спад' };
+    return { class: 'stable', icon: '➡️', text: 'Стабильно' };
+}
+
+function refreshData() {
+    if (miniChart) miniChart.destroy();
+    if (fullChart) fullChart.destroy();
+    loadChartData();
+}
+
+function showError() {
+    document.getElementById('mini-total').textContent = 'Ошибка';
+    document.getElementById('mini-total').style.color = 'var(--danger)';
+}
+
+// Инициализация
+document.addEventListener('DOMContentLoaded', () => {
+    loadChartData();
+    if (typeof Chart === 'undefined') {
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+        s.onload = loadChartData;
+        document.head.appendChild(s);
+    }
+});
+
+// Глобальные функции
+window.refreshChart = refreshData;
+window.expandChart = expandChart;
+</script>
+
+<style>
+/* Мини-версия */
+.chart-mini {
+    background: white;
+    border-radius: 8px;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: all 0.2s;
+    height: 120px;
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-mini:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-color: var(--primary);
+}
+
+.mini-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.mini-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.mini-icon {
+    font-size: 1rem;
+}
+
+.mini-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.mini-canvas {
+    flex: 1;
+    min-height: 0;
+}
+
+/* Полноэкранная версия */
+.chart-fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+}
+
+.fullscreen-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+}
+
+.fullscreen-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    width: 90%;
+    max-width: 1200px;
+    max-height: 90vh;
+    overflow: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+.fullscreen-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.fullscreen-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.fullscreen-icon {
+    font-size: 2.5rem;
+}
+
+.fullscreen-title h2 {
+    margin: 0;
+    font-size: 1.75rem;
+    color: var(--text-primary);
+}
+
+.fullscreen-period {
+    background: var(--bg-secondary);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.close-btn:hover {
+    background: var(--bg-secondary);
+    color: var(--danger);
+}
+
+.fullscreen-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.stat-value.positive { color: var(--success); }
+.stat-value.negative { color: var(--danger); }
+
+.stat-trend {
+    font-size: 1.25rem;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    display: inline-block;
+}
+
+.stat-trend.up {
+    background: rgba(34, 197, 94, 0.1);
+    color: var(--success);
+}
+
+.stat-trend.down {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger);
+}
+
+.stat-trend.stable {
+    background: rgba(156, 163, 175, 0.1);
+    color: var(--text-secondary);
+}
+
+.fullscreen-canvas {
+    height: 400px;
+    margin-bottom: 2rem;
+}
+
+.fullscreen-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.data-info {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.controls {
+    display: flex;
+    gap: 1rem;
+}
+
+.refresh-btn, .collapse-btn {
+    padding: 0.5rem 1.5rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.refresh-btn {
+    background: var(--primary);
+    color: white;
+}
+
+.refresh-btn:hover {
+    background: var(--primary-light);
+}
+
+.collapse-btn {
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+}
+
+.collapse-btn:hover {
+    background: var(--border-color);
+}
+
+/* Темная тема */
+@media (prefers-color-scheme: dark) {
+    .chart-mini, .fullscreen-content {
+        background: var(--bg-secondary);
+        border-color: var(--border-color-dark);
+    }
+    
+    .stat-card {
+        background: var(--bg-primary);
+    }
+    
+    .fullscreen-period {
+        background: var(--bg-primary);
+    }
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .fullscreen-content {
+        width: 95%;
+        padding: 1rem;
+    }
+    
+    .fullscreen-stats {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .fullscreen-canvas {
+        height: 300px;
+    }
+    
+    .fullscreen-footer {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+    
+    .controls {
+        justify-content: center;
+    }
+}
+</style>
+{{ end }}
