@@ -1,0 +1,54 @@
+{{ define "cash_chart.html" }}
+<div class="chart-mini" id="cash-chart-mini" onclick="VendERP.charts.cash.expand()" title="Нажмите для разворачивания">
+    <div class="mini-header">
+        <div class="mini-title">
+            <span class="mini-icon">💰</span>
+            <span class="mini-text">Деньги в автоматах</span>
+        </div>
+        <div class="mini-value" id="cash-mini-total">-</div>
+    </div>
+    <div class="mini-canvas">
+        <canvas id="cash-mini-chart"></canvas>
+    </div>
+</div>
+
+<div class="chart-fullscreen" id="cash-chart-fullscreen" style="display: none;">
+    <div class="fullscreen-overlay" onclick="VendERP.charts.cash.collapse()"></div>
+    <div class="fullscreen-content">
+        <div class="fullscreen-header">
+            <div class="fullscreen-title">
+                <span class="fullscreen-icon">💰</span>
+                <h2>Динамика денег в автоматах</h2>
+                <span class="fullscreen-period" id="cash-full-period">30 дней</span>
+            </div>
+            <button class="close-btn" onclick="VendERP.charts.cash.collapse()">×</button>
+        </div>
+        
+        <div class="fullscreen-stats">
+            <div class="stat-card">
+                <div class="stat-label">Общая сумма</div>
+                <div class="stat-value" id="cash-full-total">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Изменение</div>
+                <div class="stat-value" id="cash-full-change">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Тренд</div>
+                <div class="stat-trend" id="cash-full-trend">-</div>
+            </div>
+        </div>
+        
+        <div class="fullscreen-canvas">
+            <canvas id="cash-full-chart"></canvas>
+        </div>
+        
+        <div class="fullscreen-footer">
+            <div class="data-info" id="cash-data-info">Загрузка данных...</div>
+            <div class="controls">
+                <button onclick="VendERP.charts.cash.collapse()" class="collapse-btn">Свернуть</button>
+            </div>
+        </div>
+    </div>
+</div>
+{{ end }}

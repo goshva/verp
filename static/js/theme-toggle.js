@@ -59,3 +59,5 @@ const ThemeManager = {
 document.addEventListener('DOMContentLoaded', function() {
     ThemeManager.init();
 });
+
+

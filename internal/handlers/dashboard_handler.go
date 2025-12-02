@@ -10,7 +10,7 @@ import (
 type DashboardHandler struct {
     db           *sql.DB
     renderer     *TemplateRenderer
-    chartHandler *ChartHandler // Используйте существующий ChartHandler
+    chartHandler *ChartHandler
 }
 
 func NewDashboardHandler(db *sql.DB, renderer *TemplateRenderer, chartHandler *ChartHandler) *DashboardHandler {
@@ -49,7 +49,6 @@ func (h *DashboardHandler) ShowDashboard(w http.ResponseWriter, r *http.Request)
     machinesChart, err := h.chartHandler.GetMachinesChartData()
     if err != nil {
         fmt.Printf("DEBUG: Error getting machines chart data: %v\n", err)
-        // Создаем пустую структуру для избежания ошибок в шаблоне
         machinesChart = &ChartResponse{Total: 0}
     }
     
@@ -57,6 +56,14 @@ func (h *DashboardHandler) ShowDashboard(w http.ResponseWriter, r *http.Request)
     operationsChart, err := h.chartHandler.GetOperationsChartData(30)
     if err != nil {
         fmt.Printf("DEBUG: Error getting operations chart data: %v\n", err)
+        operationsChart = &ChartResponse{Total: 0}
+    }
+    
+    // Получаем данные для графика денег
+    cashChart, err := h.chartHandler.GetCashChartData()
+    if err != nil {
+        fmt.Printf("DEBUG: Error getting cash chart data: %v\n", err)
+        cashChart = &ChartResponse{Total: 0}
     }
     
     // Статистика автоматов
@@ -104,8 +111,10 @@ func (h *DashboardHandler) ShowDashboard(w http.ResponseWriter, r *http.Request)
         // Добавляем данные для графиков
         "MachinesChart":       machinesChart,
         "OperationsChart":     operationsChart,
+        "CashChart":           cashChart, // Добавлен график денег
         "MachinesChange":      machinesChart.Change,
         "OperationsChange":    operationsChart.Change,
+        "CashChange":          cashChart.Change,
     }
     
     h.renderer.Render(w, "dashboard_page.html", data)

@@ -1,3 +1,4 @@
+// cmd/randomize/main.go
 package main
 
 import (

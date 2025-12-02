@@ -752,3 +752,104 @@ func (h *ChartHandler) HandleInventoryChart(w http.ResponseWriter, r *http.Reque
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(data)
 }
+// GetCashChartData возвращает данные для графика денег в автоматах
+func (h *ChartHandler) GetCashChartData() (*ChartResponse, error) {
+	endDate := time.Now()
+	startDate := endDate.AddDate(0, 0, -30)
+
+	// Получаем сумму денег по дням
+	query := `
+		WITH date_series AS (
+			SELECT generate_series($1::date, $2::date, '1 day')::date as chart_date
+		),
+		daily_cash AS (
+			SELECT 
+				ds.chart_date,
+				COALESCE(SUM(vm.cash_amount), 0) as daily_cash_amount
+			FROM date_series ds
+			LEFT JOIN vending_machines vm ON date(vm.created_at) <= ds.chart_date
+			GROUP BY ds.chart_date
+			ORDER BY ds.chart_date
+		)
+		SELECT 
+			chart_date,
+			daily_cash_amount
+		FROM daily_cash
+		ORDER BY chart_date
+	`
+
+	rows, err := h.db.Query(query, startDate, endDate)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var dataPoints []ChartDataPoint
+	var amounts []float64
+	var dates []time.Time
+
+	for rows.Next() {
+		var date time.Time
+		var amount float64
+		if err := rows.Scan(&date, &amount); err != nil {
+			continue
+		}
+
+		amounts = append(amounts, amount)
+		dates = append(dates, date)
+
+		label := h.formatDateLabel(date, startDate, endDate)
+
+		dataPoints = append(dataPoints, ChartDataPoint{
+			Date:  date.Format("2006-01-02"),
+			Label: label,
+			Value: amount,
+		})
+	}
+
+	// Получаем текущую общую сумму денег
+	var totalCash float64
+	h.db.QueryRow("SELECT COALESCE(SUM(cash_amount), 0) FROM vending_machines").Scan(&totalCash)
+
+	// Рассчитываем изменения и тренд
+	change, changePercent, trend := h.calculateFloatMetrics(amounts)
+
+	// Создаем метки для оси X
+	labels := h.generateChartLabels(dates)
+
+	response := &ChartResponse{
+		Title:         "Деньги в автоматах",
+		Series: []ChartSeries{
+			{
+				Name:  "Деньги (руб.)",
+				Color: "#10B981", // Зеленый цвет для денег
+				Data:  dataPoints,
+			},
+		},
+		Labels:        labels,
+		Total:         int(totalCash),
+		Change:        int(change),
+		ChangePercent: changePercent,
+		Trend:         trend,
+		Period:        "30 дней",
+	}
+
+	return response, nil
+}
+
+// HandleCashChart обрабатывает HTTP запрос для данных графика денег
+func (h *ChartHandler) HandleCashChart(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	data, err := h.GetCashChartData()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(data)
+}

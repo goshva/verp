@@ -117,13 +117,20 @@ body {
     padding-bottom: 1rem;
     margin-bottom: 1rem;
 }
-
+.fullscreen-title h2,
 .card-title {
     font-size: 1.25rem;
     font-weight: 600;
     color: var(--dark);
 }
+    .fullscreen-period {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        background: var(--text-primary);
 
+    }
 /* Buttons */
 .btn {
     padding: 0.5rem 1rem;
@@ -346,8 +353,8 @@ body {
     padding: 1.5rem;
     border-radius: var(--radius);
     box-shadow: var(--shadow);
-    border: 1px solid var(--border);
     transition: transform 0.2s ease;
+    text-align: center;
 }
 
 .stat-card:hover {

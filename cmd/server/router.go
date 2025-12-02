@@ -77,6 +77,7 @@ func setupRoutes(db *sql.DB) http.Handler {
 	// API routes for charts
 	mux.HandleFunc("/api/charts/machines", requireAuth(chartHandler.HandleMachinesChart))
 	mux.HandleFunc("/api/charts/operations", requireAuth(chartHandler.HandleOperationsChart))
+	mux.HandleFunc("/api/charts/cash", chartHandler.HandleCashChart)
 	mux.HandleFunc("/api/charts/revenue", requireAuth(chartHandler.HandleRevenueChart))
 	mux.HandleFunc("/api/charts/inventory", requireAuth(chartHandler.HandleInventoryChart))
 

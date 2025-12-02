@@ -16,8 +16,8 @@
         <!-- Статистика автоматов -->
 
         {{ template "machines_chart.html" . }}
-        {{ template "operations_chart.html" . }}
-
+        {{template "operations_chart.html" .}}
+        {{ template "cash_chart.html" . }}
 
         <div class="stat-card">
             <div class="stat-icon">🟢</div>
@@ -26,22 +26,9 @@
         </div>
 
         <div class="stat-card">
-            <div class="stat-icon">💰</div>
-            <div class="stat-value">{{.TotalCash}}</div>
-            <div class="stat-label">Общая сумма в автоматах</div>
-        </div>
-
-        <div class="stat-card">
             <div class="stat-icon">🎪</div>
             <div class="stat-value">{{.TotalToys}}</div>
             <div class="stat-label">Игрушек в автоматах</div>
-        </div>
-
-        <!-- Статистика операций -->
-        <div class="stat-card">
-            <div class="stat-icon">📋</div>
-            <div class="stat-value">{{.TotalOperations}}</div>
-            <div class="stat-label">Всего операций</div>
         </div>
 
         <div class="stat-card">
@@ -153,37 +140,36 @@
 </div>
 {{end}}
 
-<style>
-    .stat-card {
-        text-align: center;
-    }
 
-    .stat-card:hover {
-        transform: translateY(-2px);
+<!-- Добавьте временно в dashboard_page.html для тестирования -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Тестовая функция для проверки API
+    async function testCashApi() {
+        try {
+            console.log('Testing /api/charts/cash endpoint...');
+            const response = await fetch('/api/charts/cash');
+            console.log('Response status:', response.status);
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Cash chart data:', data);
+                return true;
+            } else {
+                console.error('API error:', response.status, response.statusText);
+                return false;
+            }
+        } catch (error) {
+            console.error('Fetch error:', error);
+            return false;
+        }
     }
-
-    .stat-icon {
-        font-size: 2rem;
-        margin-bottom: 0.5rem;
-    }
-
-    .stat-value {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: var(--primary);
-        margin-bottom: 0.5rem;
-    }
-
-    .stat-label {
-        font-size: 0.875rem;
-        color: var(--text-secondary);
-        font-weight: 500;
-    }
-
-    .page-subtitle {
-        color: var(--text-secondary);
-        margin-top: 0.5rem;
-        font-size: 1.1rem;
-    }
-</style>
+    
+    // Запустить тест через 2 секунды после загрузки
+    setTimeout(() => {
+        testCashApi().then(success => {
+            console.log('Cash API test:', success ? 'SUCCESS' : 'FAILED');
+        });
+    }, 2000);
+});
+</script>
 {{ end }}
