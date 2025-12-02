@@ -954,3 +954,105 @@ func (h *ChartHandler) HandleToysChart(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(data)
 }
+// GetActiveMachinesChartData возвращает данные для графика активных автоматов
+func (h *ChartHandler) GetActiveMachinesChartData() (*ChartResponse, error) {
+	endDate := time.Now()
+	startDate := endDate.AddDate(0, 0, -30)
+
+	// Получаем количество активных автоматов по дням
+	query := `
+		WITH date_series AS (
+			SELECT generate_series($1::date, $2::date, '1 day')::date as chart_date
+		),
+		daily_active_counts AS (
+			SELECT 
+				ds.chart_date,
+				COUNT(DISTINCT vm.id) as active_machine_count
+			FROM date_series ds
+			LEFT JOIN vending_machines vm ON date(vm.created_at) <= ds.chart_date 
+				AND (vm.status = 'active' OR vm.status IS NULL)
+			GROUP BY ds.chart_date
+			ORDER BY ds.chart_date
+		)
+		SELECT 
+			chart_date,
+			active_machine_count
+		FROM daily_active_counts
+		ORDER BY chart_date
+	`
+
+	rows, err := h.db.Query(query, startDate, endDate)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var dataPoints []ChartDataPoint
+	var counts []int
+	var dates []time.Time
+
+	for rows.Next() {
+		var date time.Time
+		var count int
+		if err := rows.Scan(&date, &count); err != nil {
+			continue
+		}
+
+		counts = append(counts, count)
+		dates = append(dates, date)
+
+		label := h.formatDateLabel(date, startDate, endDate)
+
+		dataPoints = append(dataPoints, ChartDataPoint{
+			Date:  date.Format("2006-01-02"),
+			Label: label,
+			Count: count,
+		})
+	}
+
+	// Получаем текущее количество активных автоматов
+	var activeMachines int
+	h.db.QueryRow("SELECT COUNT(*) FROM vending_machines WHERE status = 'active'").Scan(&activeMachines)
+
+	// Рассчитываем изменения и тренд
+	change, changePercent, trend := h.calculateMetrics(counts)
+
+	// Создаем метки для оси X
+	labels := h.generateChartLabels(dates)
+
+	response := &ChartResponse{
+		Title:         "Активные автоматы",
+		Series: []ChartSeries{
+			{
+				Name:  "Активные автоматы",
+				Color: "#10B981", // Зеленый для активных
+				Data:  dataPoints,
+			},
+		},
+		Labels:        labels,
+		Total:         activeMachines,
+		Change:        change,
+		ChangePercent: changePercent,
+		Trend:         trend,
+		Period:        "30 дней",
+	}
+
+	return response, nil
+}
+
+// HandleActiveMachinesChart обрабатывает HTTP запрос для данных графика активных автоматов
+func (h *ChartHandler) HandleActiveMachinesChart(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	data, err := h.GetActiveMachinesChartData()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(data)
+}

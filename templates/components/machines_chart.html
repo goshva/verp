@@ -1,17 +1,29 @@
 {{ define "machines_chart.html" }}
-<div class="chart-mini" id="machines-chart-mini" onclick="VendERP.charts.machines.expand()" title="Нажмите для разворачивания">
-    <div class="mini-header">
-        <div class="mini-title">
-            <span class="mini-icon">📈</span>
-            <span class="mini-text">Автоматы</span>
+<div class="chart-mini-dual" id="machines-chart-mini" onclick="VendERP.charts.machines.expand()" title="Нажмите для разворачивания">
+    <div class="dual-header">
+        <div class="dual-title">
+            <span class="dual-icon">🤖</span>
+            <span class="dual-text">Автоматы</span>
         </div>
-        <div class="mini-value" id="machines-mini-total">-</div>
+        <div class="dual-stats">
+            <div class="dual-stat">
+                <div class="dual-stat-value" id="machines-total-count">{{.TotalMachines}}</div>
+            </div>
+            <div class="dual-stat">
+                <div class="dual-stat-value" id="machines-active-count">{{.ActiveMachines}}</div>
+            </div>
+        </div>
     </div>
-    <div class="mini-canvas">
-        <canvas id="machines-mini-chart"></canvas>
+    
+    <!-- Один график с двумя линиями -->
+    <div class="dual-canvas-single">
+        <canvas id="machines-dual-chart"></canvas>
     </div>
+  
+
 </div>
 
+<!-- Полноэкранная версия -->
 <div class="chart-fullscreen" id="machines-chart-fullscreen" style="display: none;">
     <div class="fullscreen-overlay" onclick="VendERP.charts.machines.collapse()"></div>
     <div class="fullscreen-content">
@@ -30,27 +42,189 @@
                 <div class="stat-value" id="machines-full-total">-</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Изменение</div>
-                <div class="stat-value" id="machines-full-change">-</div>
+                <div class="stat-label">Активных автоматов</div>
+                <div class="stat-value" id="machines-full-active">-</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Тренд</div>
-                <div class="stat-trend" id="machines-full-trend">-</div>
+                <div class="stat-label">% активных</div>
+                <div class="stat-value" id="machines-full-percent">-</div>
             </div>
         </div>
         
-        <div class="fullscreen-canvas">
-            <canvas id="machines-full-chart"></canvas>
+        <!-- Один полноэкранный график с двумя линиями -->
+        <div class="fullscreen-canvas-single">
+            <canvas id="machines-full-dual-chart"></canvas>
         </div>
         
         <div class="fullscreen-footer">
             <div class="data-info" id="machines-data-info">Загрузка данных...</div>
             <div class="controls">
+                <button onclick="VendERP.charts.machines.refresh()" class="refresh-btn">🔄 Обновить</button>
                 <button onclick="VendERP.charts.machines.collapse()" class="collapse-btn">Свернуть</button>
             </div>
         </div>
     </div>
 </div>
 
+<style>
+/* Стили для двойного графика */
+.chart-mini-dual {
+    background: white;
+    border-radius: 8px;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: all 0.2s;
+    height: 160px;
+    display: flex;
+    flex-direction: column;
+}
 
+.chart-mini-dual:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-color: var(--primary);
+}
+
+.dual-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.dual-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.dual-icon {
+    font-size: 1rem;
+}
+
+.dual-stats {
+    display: flex;
+    gap: 1rem;
+}
+
+.dual-stat {
+    text-align: center;
+}
+
+.dual-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+#machines-active-count {
+    color: var(--success);
+}
+
+.dual-stat-label {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+}
+
+/* Контейнер для одного графика */
+.dual-canvas-single {
+    flex: 1;
+    min-height: 0;
+    position: relative;
+}
+
+.fullscreen-canvas-single {
+    height: 400px;
+    margin-bottom: 2rem;
+}
+
+.dual-footer {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dual-legend {
+    display: flex;
+    gap: 1rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.7rem;
+}
+
+.legend-color {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    display: inline-block;
+}
+
+.legend-text {
+    color: var(--text-secondary);
+}
+
+.dual-percent {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+}
+
+.percent-icon {
+    font-size: 0.875rem;
+}
+
+.percent-value {
+    font-weight: 600;
+    color: var(--success);
+}
+
+.percent-label {
+    color: var(--text-secondary);
+}
+
+/* Темная тема */
+@media (prefers-color-scheme: dark) {
+    .chart-mini-dual {
+        background: var(--bg-secondary);
+        border-color: var(--border-color-dark);
+    }
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .chart-mini-dual {
+        height: 160px;
+    }
+    
+    .dual-stats {
+        gap: 0.5rem;
+    }
+    
+    .dual-stat-value {
+        font-size: 1.1rem;
+    }
+    
+    .dual-legend {
+        gap: 0.5rem;
+    }
+    
+    .legend-item {
+        font-size: 0.65rem;
+    }
+    
+    .fullscreen-canvas-single {
+        height: 300px;
+    }
+}
+</style>
 {{ end }}
