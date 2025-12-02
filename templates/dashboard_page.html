@@ -19,29 +19,7 @@
         {{template "operations_chart.html" .}}
         {{ template "cash_chart.html" . }}
         {{ template "toys_chart.html" . }}
-        <div class="stat-card">
-            <div class="stat-icon">🟢</div>
-            <div class="stat-value">{{.ActiveMachines}}</div>
-            <div class="stat-label">Активных автоматов</div>
-        </div>
 
-        <div class="stat-card">
-            <div class="stat-icon">🔄</div>
-            <div class="stat-value">{{.RestockOperations}}</div>
-            <div class="stat-label">Пополнений</div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-icon">💵</div>
-            <div class="stat-value">{{.CollectionOperations}}</div>
-            <div class="stat-label">Инкассаций</div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-icon">🔧</div>
-            <div class="stat-value">{{.MaintenanceOperations}}</div>
-            <div class="stat-label">Обслуживаний</div>
-        </div>
     </div>
 </div>
 

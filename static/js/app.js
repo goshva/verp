@@ -672,7 +672,7 @@ const VendERP = {
                 }
 
                 // Обновляем полноэкранные данные
-               // this.updateFullscreenUI();
+                // this.updateFullscreenUI();
             },
 
             // Мини-график с двумя линиями
@@ -1026,13 +1026,13 @@ const VendERP = {
             // Загрузка данных
             load: async function () {
                 try {
-                    console.log('Loading operations chart data...');
+                    console.log('DEBUG: Loading operations chart data...');
                     const res = await fetch('/api/charts/operations');
                     if (!res.ok) {
                         throw new Error(`HTTP error! status: ${res.status}`);
                     }
                     this.data = await res.json();
-                    console.log('Operations chart data loaded:', this.data);
+                    console.log('DEBUG: Operations chart data loaded:', this.data);
                     this.updateUI();
                 } catch (err) {
                     console.error('Ошибка загрузки графика операций:', err);
@@ -1048,25 +1048,221 @@ const VendERP = {
                     return;
                 }
 
-                const series = this.data.series[0];
-                const labels = this.data.labels || [];
-                const counts = series.data ? series.data.map(d => d.count || d.value || 0) : [];
-
-                console.log('Updating operations UI with:', {
-                    total: this.data.total,
-                    labels: labels.length,
-                    data: counts.length
+                console.log('DEBUG: Updating operations UI with:', {
+                    seriesCount: this.data.series.length,
+                    labels: this.data.labels?.length || 0,
+                    total: this.data.total
                 });
 
-                // Мини-график
+                // Считаем общие суммы для каждой категории
+                const totals = {};
+                this.data.series.forEach(series => {
+                    totals[series.name] = series.data.reduce((sum, d) => sum + (d.count || 0), 0);
+                });
+
+                // Обновляем мини-карточки
+                this.updateMiniCards(totals);
+
+                // Обновляем мини-график (группированные столбцы)
+                this.updateMiniChart();
+
+                // Обновляем полноэкранные данные
+                this.updateFullscreenUI(totals);
+            },
+
+            // Обновление мини-карточек с иконками
+            updateMiniCards: function (totals) {
+                const cards = [
+                    { id: 'operations-replenish-card', type: 'Пополнение', icon: '🔄', color: '#10B981' },
+                    { id: 'operations-collection-card', type: 'Инкассация', icon: '💵', color: '#F59E0B' },
+                    { id: 'operations-service-card', type: 'Обслуживание', icon: '🔧', color: '#EF4444' }
+                ];
+
+                cards.forEach(card => {
+                    const cardElement = document.getElementById(card.id);
+                    if (cardElement) {
+                        const countElement = cardElement.querySelector('.stat-number');
+                        const iconElement = cardElement.querySelector('.stat-icon');
+                        const textElement = cardElement.querySelector('.stat-text');
+
+                        if (countElement) {
+                            countElement.textContent = totals[card.type] || '0';
+                        }
+                        if (iconElement) {
+                            iconElement.textContent = card.icon;
+                            iconElement.style.color = card.color;
+                        }
+                        if (textElement) {
+                            textElement.textContent = card.type;
+                        }
+                    }
+                });
+
+                // Обновляем общий тотал
                 const totalElement = document.getElementById('operations-mini-total');
                 if (totalElement) {
                     totalElement.textContent = this.data.total || '-';
                 }
+            },
 
-                this.updateMiniChart(labels, counts, series.color);
+            // Мини-график с группированными столбцами
+            updateMiniChart: function () {
+                const canvas = document.getElementById('operations-mini-chart');
+                if (!canvas) {
+                    console.warn('Operations mini chart canvas not found');
+                    return;
+                }
 
-                // Полноэкранный график
+                const ctx = canvas.getContext('2d');
+
+                if (this.miniChart) this.miniChart.destroy();
+
+                if (!this.data.series || this.data.series.length === 0) {
+                    this.miniChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'],
+                            datasets: [
+                                {
+                                    label: 'Пополнения',
+                                    data: [3, 2, 4, 5, 3, 2],
+                                    backgroundColor: '#10B981',
+                                    borderColor: '#10B981',
+                                    borderWidth: 1,
+                                    barPercentage: 0.6,
+                                    categoryPercentage: 0.8
+                                },
+                                {
+                                    label: 'Инкассации',
+                                    data: [2, 3, 1, 4, 2, 1],
+                                    backgroundColor: '#F59E0B',
+                                    borderColor: '#F59E0B',
+                                    borderWidth: 1,
+                                    barPercentage: 0.6,
+                                    categoryPercentage: 0.8
+                                },
+                                {
+                                    label: 'Обслуживания',
+                                    data: [1, 2, 1, 3, 1, 2],
+                                    backgroundColor: '#EF4444',
+                                    borderColor: '#EF4444',
+                                    borderWidth: 1,
+                                    barPercentage: 0.6,
+                                    categoryPercentage: 0.8
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    enabled: false,
+                                    mode: 'index',
+                                    intersect: false
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    display: false,
+                                    grid: { display: false }
+                                },
+                                y: {
+                                    display: false,
+                                    grid: { display: false },
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                    return;
+                }
+
+                // Для мини-графика берем только последние 7 дней
+                const labels = this.data.labels || [];
+                const series = this.data.series;
+
+                // Определяем индексы последних 7 точек
+                const startIndex = Math.max(0, labels.length - 7);
+                const miniLabels = labels.slice(startIndex);
+
+                const datasets = series.map(s => {
+                    const data = s.data || [];
+                    const miniData = data.slice(startIndex).map(d => d.count || 0);
+
+                    return {
+                        label: s.name,
+                        data: miniData,
+                        backgroundColor: s.color + 'CC',
+                        borderColor: s.color,
+                        borderWidth: 1,
+                        barPercentage: 0.6,
+                        categoryPercentage: 0.8
+                    };
+                });
+
+                this.miniChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: miniLabels,
+                        datasets: datasets
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                enabled: true,
+                                mode: 'index',
+                                intersect: false,
+                                callbacks: {
+                                    label: function (context) {
+                                        return `${context.dataset.label}: ${context.parsed.y} операций`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                display: false,
+                                grid: { display: false },
+                                stacked: false
+                            },
+                            y: {
+                                display: false,
+                                grid: { display: false },
+                                beginAtZero: true,
+                                stacked: false
+                            }
+                        },
+                        interaction: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    }
+                });
+            },
+
+            // Обновление полноэкранного интерфейса
+            updateFullscreenUI: function (totals) {
+                // Обновляем карточки в полноэкранном режиме
+                const categories = [
+                    { id: 'operations-full-replenish', type: 'Пополнение', color: '#10B981' },
+                    { id: 'operations-full-collection', type: 'Инкассация', color: '#F59E0B' },
+                    { id: 'operations-full-service', type: 'Обслуживание', color: '#EF4444' }
+                ];
+
+                categories.forEach(cat => {
+                    const element = document.getElementById(cat.id);
+                    if (element) {
+                        element.textContent = totals[cat.type] || '0';
+                        element.style.color = cat.color;
+                    }
+                });
+
+                // Общий тотал
                 const fullTotal = document.getElementById('operations-full-total');
                 if (fullTotal) {
                     fullTotal.textContent = this.data.total || '-';
@@ -1100,104 +1296,7 @@ const VendERP = {
                 }
             },
 
-            // Мини-график
-            updateMiniChart: function (labels, data, color) {
-                const canvas = document.getElementById('operations-mini-chart');
-                if (!canvas) {
-                    console.warn('Operations mini chart canvas not found');
-                    return;
-                }
-
-                const ctx = canvas.getContext('2d');
-
-                if (this.miniChart) this.miniChart.destroy();
-
-                // Если данных нет, показываем placeholder
-                if (data.length === 0) {
-                    console.log('No data for operations mini chart, showing placeholder');
-                    this.miniChart = new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: ['', '', '', '', '', ''],
-                            datasets: [{
-                                data: [1, 2, 1, 3, 2, 1],
-                                borderColor: '#E5E7EB',
-                                backgroundColor: 'rgba(229, 231, 235, 0.2)',
-                                borderWidth: 1,
-                                fill: true,
-                                tension: 0.4,
-                                pointRadius: 0
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { display: false },
-                                tooltip: { enabled: false }
-                            },
-                            scales: {
-                                x: { display: false },
-                                y: { display: false }
-                            }
-                        }
-                    });
-                    return;
-                }
-
-                // Фильтруем данные для мини-графика (каждую 3-ю точку)
-                const filteredLabels = [];
-                const filteredData = [];
-                for (let i = 0; i < labels.length; i++) {
-                    if (i % 3 === 0 || i === labels.length - 1) {
-                        filteredLabels.push(labels[i]);
-                        filteredData.push(data[i] || 0);
-                    }
-                }
-
-                this.miniChart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: filteredLabels,
-                        datasets: [{
-                            data: filteredData,
-                            borderColor: color || '#10B981',
-                            backgroundColor: (color || '#10B981') + '20',
-                            borderWidth: 1.5,
-                            fill: false,
-                            tension: 0.3,
-                            pointRadius: 0
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: {
-                                enabled: true,
-                                callbacks: {
-                                    label: function (context) {
-                                        return `${context.raw} операций`;
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            x: {
-                                display: false,
-                                grid: { display: false }
-                            },
-                            y: {
-                                display: false,
-                                grid: { display: false }
-                            }
-                        }
-                    }
-                });
-            },
-
-            // Полноэкранный график
+            // Полноэкранный график с группированными столбцами
             updateFullChart: function () {
                 const canvas = document.getElementById('operations-full-chart');
                 if (!canvas || !this.data || !this.data.series || this.data.series.length === 0) {
@@ -1206,78 +1305,219 @@ const VendERP = {
                 }
 
                 const ctx = canvas.getContext('2d');
-                const series = this.data.series[0];
                 const labels = this.data.labels || [];
-                const counts = series.data ? series.data.map(d => d.count || d.value || 0) : [];
-                const dates = series.data ? series.data.map(d => d.date || '') : [];
 
                 if (this.fullChart) this.fullChart.destroy();
 
-                const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-                gradient.addColorStop(0, (series.color || '#10B981') + 'CC');
-                gradient.addColorStop(1, (series.color || '#10B981') + '22');
+                // Подготавливаем данные для группированных столбцов
+                const datasets = this.data.series.map(series => {
+                    const data = series.data || [];
+                    const counts = data.map(d => d.count || 0);
+                    const dates = data.map(d => d.date || '');
+
+                    return {
+                        label: series.name,
+                        data: counts,
+                        backgroundColor: series.color + 'CC',
+                        borderColor: series.color,
+                        borderWidth: 1,
+                        dates: dates
+                    };
+                });
 
                 this.fullChart = new Chart(ctx, {
-                    type: 'line',
+                    type: 'bar',
                     data: {
                         labels: labels,
-                        datasets: [{
-                            label: 'Операции',
-                            data: counts,
-                            borderColor: series.color || '#10B981',
-                            backgroundColor: gradient,
-                            borderWidth: 3,
-                            fill: true,
-                            tension: 0.3,
-                            pointBackgroundColor: series.color || '#10B981',
-                            pointBorderColor: '#fff',
-                            pointBorderWidth: 2,
-                            pointRadius: 4,
-                            pointHoverRadius: 6
-                        }]
+                        datasets: datasets
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
-                            legend: { display: false },
+                            legend: {
+                                display: true,
+                                position: 'top',
+                                labels: {
+                                    padding: 20,
+                                    usePointStyle: true,
+                                    pointStyle: 'rect',
+                                    font: {
+                                        size: 14
+                                    }
+                                }
+                            },
                             tooltip: {
+                                mode: 'index',
+                                intersect: false,
                                 callbacks: {
+                                    title: function (context) {
+                                        const date = context[0].dataset.dates?.[context[0].dataIndex] || '';
+                                        return date || `День ${context[0].label}`;
+                                    },
                                     label: function (context) {
-                                        const date = dates[context.dataIndex] || '';
-                                        const label = date ? `${date}: ` : '';
-                                        return `${label}${context.raw} операций`;
+                                        return `${context.dataset.label}: ${context.parsed.y} операций`;
                                     }
                                 }
                             }
                         },
                         scales: {
                             x: {
-                                grid: { display: false },
+                                grid: {
+                                    display: false
+                                },
                                 ticks: {
-                                    maxTicksLimit: 10
-                                }
+                                    maxTicksLimit: 15,
+                                    font: {
+                                        size: 11
+                                    }
+                                },
+                                stacked: false
                             },
                             y: {
                                 beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(0,0,0,0.05)'
+                                },
                                 ticks: {
+                                    font: {
+                                        size: 12
+                                    },
                                     callback: function (value) {
                                         return value;
+                                    },
+                                    stepSize: 1
+                                },
+                                stacked: false
+                            }
+                        },
+                        interaction: {
+                            mode: 'index',
+                            intersect: false
+                        },
+                        barPercentage: 0.8,
+                        categoryPercentage: 0.9
+                    }
+                });
+            },
+
+            // Альтернатива: сложенный (stacked) bar chart
+            updateStackedFullChart: function () {
+                const canvas = document.getElementById('operations-full-chart');
+                if (!canvas || !this.data || !this.data.series || this.data.series.length === 0) {
+                    console.warn('Cannot update operations full chart - missing data or canvas');
+                    return;
+                }
+
+                const ctx = canvas.getContext('2d');
+                const labels = this.data.labels || [];
+
+                if (this.fullChart) this.fullChart.destroy();
+
+                // Для stacked chart используем полупрозрачные цвета
+                const datasets = this.data.series.map(series => {
+                    const data = series.data || [];
+                    const counts = data.map(d => d.count || 0);
+                    const dates = data.map(d => d.date || '');
+
+                    return {
+                        label: series.name,
+                        data: counts,
+                        backgroundColor: series.color + '99', // Более прозрачный для stacked
+                        borderColor: series.color,
+                        borderWidth: 0,
+                        dates: dates
+                    };
+                });
+
+                this.fullChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: datasets
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top',
+                                labels: {
+                                    padding: 20,
+                                    usePointStyle: true,
+                                    pointStyle: 'rect',
+                                    font: {
+                                        size: 14
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false,
+                                callbacks: {
+                                    title: function (context) {
+                                        const date = context[0].dataset.dates?.[context[0].dataIndex] || '';
+                                        return date || `День ${context[0].label}`;
+                                    },
+                                    label: function (context) {
+                                        return `${context.dataset.label}: ${context.parsed.y} операций`;
                                     }
                                 }
                             }
+                        },
+                        scales: {
+                            x: {
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    maxTicksLimit: 15,
+                                    font: {
+                                        size: 11
+                                    }
+                                },
+                                stacked: true
+                            },
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(0,0,0,0.05)'
+                                },
+                                ticks: {
+                                    font: {
+                                        size: 12
+                                    },
+                                    callback: function (value) {
+                                        return value;
+                                    },
+                                    stepSize: 1
+                                },
+                                stacked: true
+                            }
+                        },
+                        interaction: {
+                            mode: 'index',
+                            intersect: false
                         }
                     }
                 });
             },
 
-            // Разворачивание/сворачивание
-            expand: function () {
+            // Разворачивание/сворачивание с возможностью выбора типа графика
+            expand: function (chartType = 'grouped') {
                 const fullscreen = document.getElementById('operations-chart-fullscreen');
                 if (fullscreen) {
                     fullscreen.style.display = 'block';
                     document.body.style.overflow = 'hidden';
-                    setTimeout(() => this.updateFullChart(), 100);
+
+                    setTimeout(() => {
+                        if (chartType === 'stacked') {
+                            this.updateStackedFullChart();
+                        } else {
+                            this.updateFullChart();
+                        }
+                    }, 100);
                 }
             },
 
@@ -1286,6 +1526,29 @@ const VendERP = {
                 if (fullscreen) {
                     fullscreen.style.display = 'none';
                     document.body.style.overflow = 'auto';
+                }
+            },
+
+            // Переключение между типами графиков в полноэкранном режиме
+            toggleChartType: function () {
+                const toggleBtn = document.getElementById('operations-chart-toggle');
+                if (!toggleBtn) return;
+
+                const currentType = toggleBtn.dataset.type || 'grouped';
+                const newType = currentType === 'grouped' ? 'stacked' : 'grouped';
+
+                toggleBtn.dataset.type = newType;
+                toggleBtn.innerHTML = newType === 'stacked' ?
+                    '<i class="icon-layers"></i> Сгруппировать' :
+                    '<i class="icon-stack"></i> Сложить';
+
+                if (this.fullChart) {
+                    this.fullChart.destroy();
+                    if (newType === 'stacked') {
+                        this.updateStackedFullChart();
+                    } else {
+                        this.updateFullChart();
+                    }
                 }
             },
 
