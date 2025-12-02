@@ -398,6 +398,7 @@ body.dark-theme .stat-card.glow {
 
 body.dark-theme .stat-card,
 body.dark-theme .chart-mini,
+body.dark-theme .chart-mini-dual,
 body.dark-theme .fullscreen-content {
     background: var(--bg-secondary);
 }
