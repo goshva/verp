@@ -96,6 +96,7 @@ func (tr *TemplateRenderer) loadTemplates() {
 		"templates/components/machines_chart.html",
 		"templates/components/operations_chart.html",
 		"templates/components/cash_chart.html",
+		"templates/components/toy_chart.html",
 	}
 
 	// Проверяем существование файлов перед добавлением

@@ -18,17 +18,11 @@
         {{ template "machines_chart.html" . }}
         {{template "operations_chart.html" .}}
         {{ template "cash_chart.html" . }}
-
+        {{ template "toys_chart.html" . }}
         <div class="stat-card">
             <div class="stat-icon">🟢</div>
             <div class="stat-value">{{.ActiveMachines}}</div>
             <div class="stat-label">Активных автоматов</div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-icon">🎪</div>
-            <div class="stat-value">{{.TotalToys}}</div>
-            <div class="stat-label">Игрушек в автоматах</div>
         </div>
 
         <div class="stat-card">

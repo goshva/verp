@@ -853,3 +853,104 @@ func (h *ChartHandler) HandleCashChart(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(data)
 }
+// GetToysChartData возвращает данные для графика игрушек в автоматах
+func (h *ChartHandler) GetToysChartData() (*ChartResponse, error) {
+	endDate := time.Now()
+	startDate := endDate.AddDate(0, 0, -30)
+
+	// Получаем количество игрушек по дням
+	query := `
+		WITH date_series AS (
+			SELECT generate_series($1::date, $2::date, '1 day')::date as chart_date
+		),
+		daily_toys AS (
+			SELECT 
+				ds.chart_date,
+				COALESCE(SUM(vm.current_toys_count), 0) as daily_toys_count
+			FROM date_series ds
+			LEFT JOIN vending_machines vm ON date(vm.created_at) <= ds.chart_date
+			GROUP BY ds.chart_date
+			ORDER BY ds.chart_date
+		)
+		SELECT 
+			chart_date,
+			daily_toys_count
+		FROM daily_toys
+		ORDER BY chart_date
+	`
+
+	rows, err := h.db.Query(query, startDate, endDate)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var dataPoints []ChartDataPoint
+	var counts []int
+	var dates []time.Time
+
+	for rows.Next() {
+		var date time.Time
+		var count int
+		if err := rows.Scan(&date, &count); err != nil {
+			continue
+		}
+
+		counts = append(counts, count)
+		dates = append(dates, date)
+
+		label := h.formatDateLabel(date, startDate, endDate)
+
+		dataPoints = append(dataPoints, ChartDataPoint{
+			Date:  date.Format("2006-01-02"),
+			Label: label,
+			Count: count,
+		})
+	}
+
+	// Получаем текущее общее количество игрушек
+	var totalToys int
+	h.db.QueryRow("SELECT COALESCE(SUM(current_toys_count), 0) FROM vending_machines").Scan(&totalToys)
+
+	// Рассчитываем изменения и тренд
+	change, changePercent, trend := h.calculateMetrics(counts)
+
+	// Создаем метки для оси X
+	labels := h.generateChartLabels(dates)
+
+	response := &ChartResponse{
+		Title:         "Игрушки в автоматах",
+		Series: []ChartSeries{
+			{
+				Name:  "Игрушки",
+				Color: "#8B5CF6", // Фиолетовый цвет для игрушек
+				Data:  dataPoints,
+			},
+		},
+		Labels:        labels,
+		Total:         totalToys,
+		Change:        change,
+		ChangePercent: changePercent,
+		Trend:         trend,
+		Period:        "30 дней",
+	}
+
+	return response, nil
+}
+
+// HandleToysChart обрабатывает HTTP запрос для данных графика игрушек
+func (h *ChartHandler) HandleToysChart(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	data, err := h.GetToysChartData()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(data)
+}

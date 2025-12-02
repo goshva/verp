@@ -17,13 +17,13 @@ func setupRoutes(db *sql.DB) http.Handler {
 	machines := handlers.NewMachineHandler(db, renderer)
 	locations := handlers.NewLocationHandler(db, renderer)
 	operations := handlers.NewOperationHandler(db, renderer)
-	
+
 	// Chart handler - создаем первым
 	chartHandler := handlers.NewChartHandler(db)
-	
+
 	// Dashboard handler - передаем chartHandler
 	dashboard := handlers.NewDashboardHandler(db, renderer, chartHandler)
-	
+
 	warehouses := handlers.NewWarehouseHandler(db, renderer)
 
 	// Auth middleware closure
@@ -80,7 +80,7 @@ func setupRoutes(db *sql.DB) http.Handler {
 	mux.HandleFunc("/api/charts/cash", chartHandler.HandleCashChart)
 	mux.HandleFunc("/api/charts/revenue", requireAuth(chartHandler.HandleRevenueChart))
 	mux.HandleFunc("/api/charts/inventory", requireAuth(chartHandler.HandleInventoryChart))
-
+	mux.HandleFunc("/api/charts/toys", chartHandler.HandleToysChart)
 	// Static files
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 

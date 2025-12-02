@@ -1,0 +1,67 @@
+{{ define "toys_chart.html" }}
+<div class="chart-mini" id="toys-chart-mini" onclick="VendERP.charts.toys.expand()" title="Нажмите для разворачивания">
+    <div class="mini-header">
+        <div class="mini-title">
+            <span class="mini-icon">🎪</span>
+            <span class="mini-text">Игрушки в автоматах</span>
+        </div>
+        <div class="mini-value" id="toys-mini-total">-</div>
+    </div>
+    <div class="mini-canvas">
+        <canvas id="toys-mini-chart"></canvas>
+    </div>
+</div>
+
+<div class="chart-fullscreen" id="toys-chart-fullscreen" style="display: none;">
+    <div class="fullscreen-overlay" onclick="VendERP.charts.toys.collapse()"></div>
+    <div class="fullscreen-content">
+        <div class="fullscreen-header">
+            <div class="fullscreen-title">
+                <span class="fullscreen-icon">🎪</span>
+                <h2>Динамика игрушек в автоматах</h2>
+                <span class="fullscreen-period" id="toys-full-period">30 дней</span>
+            </div>
+            <button class="close-btn" onclick="VendERP.charts.toys.collapse()">×</button>
+        </div>
+        
+        <div class="fullscreen-stats">
+            <div class="stat-card">
+                <div class="stat-label">Всего игрушек</div>
+                <div class="stat-value" id="toys-full-total">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Изменение</div>
+                <div class="stat-value" id="toys-full-change">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Тренд</div>
+                <div class="stat-trend" id="toys-full-trend">-</div>
+            </div>
+        </div>
+        
+        <div class="fullscreen-canvas">
+            <canvas id="toys-full-chart"></canvas>
+        </div>
+        
+        <div class="fullscreen-footer">
+            <div class="data-info" id="toys-data-info">Загрузка данных...</div>
+            <div class="controls">
+                <button onclick="VendERP.charts.toys.refresh()" class="refresh-btn">🔄 Обновить</button>
+                <button onclick="VendERP.charts.toys.collapse()" class="collapse-btn">Свернуть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Стили для графика игрушек (если нужно переопределить цвета) */
+#toys-chart-mini .mini-value {
+    color: #8B5CF6; /* Фиолетовый цвет для игрушек */
+}
+
+.stat-trend.up {
+    background: rgba(139, 92, 246, 0.1);
+    color: #8B5CF6;
+}
+</style>
+{{ end }}
