@@ -1018,562 +1018,567 @@ const VendERP = {
                 }
             }
         },
-        operations: {
-            data: null,
-            miniChart: null,
-            fullChart: null,
+operations: {
+    data: null,
+    miniChart: null,
+    fullChart: null,
 
-            // Загрузка данных
-            load: async function () {
-                try {
-                    console.log('DEBUG: Loading operations chart data...');
-                    const res = await fetch('/api/charts/operations');
-                    if (!res.ok) {
-                        throw new Error(`HTTP error! status: ${res.status}`);
-                    }
-                    this.data = await res.json();
-                    console.log('DEBUG: Operations chart data loaded:', this.data);
-                    this.updateUI();
-                } catch (err) {
-                    console.error('Ошибка загрузки графика операций:', err);
-                    this.showError();
+    // Загрузка данных
+    load: async function () {
+        try {
+            console.log('DEBUG: Loading operations chart data...');
+            const res = await fetch('/api/charts/operations');
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
+            this.data = await res.json();
+            console.log('DEBUG: Operations chart data loaded:', this.data);
+            this.updateUI();
+        } catch (err) {
+            console.error('Ошибка загрузки графика операций:', err);
+            this.showError();
+        }
+    },
+
+    // Обновление интерфейса
+    updateUI: function () {
+        if (!this.data || !this.data.series || this.data.series.length === 0) {
+            console.warn('No data for operations chart');
+            this.showError();
+            return;
+        }
+
+        console.log('DEBUG: Updating operations UI with:', {
+            seriesCount: this.data.series.length,
+            labels: this.data.labels?.length || 0,
+            total: this.data.total
+        });
+
+        // Считаем общие суммы для каждой категории
+        const totals = {};
+        this.data.series.forEach(series => {
+            totals[series.name] = series.data.reduce((sum, d) => sum + (d.count || 0), 0);
+        });
+
+        // Обновляем мини-карточки
+        this.updateMiniCards(totals);
+
+        // Обновляем мини-график (stacked chart за месяц)
+        this.updateMiniChart();
+
+        // Обновляем полноэкранные данные
+        this.updateFullscreenUI(totals);
+    },
+
+    // Обновление мини-карточек с иконками
+    updateMiniCards: function (totals) {
+        const cards = [
+            { id: 'operations-replenish-card', type: 'Пополнение', icon: '🔄', color: '#10B981' },
+            { id: 'operations-collection-card', type: 'Инкассация', icon: '💵', color: '#F59E0B' },
+            { id: 'operations-service-card', type: 'Обслуживание', icon: '🔧', color: '#EF4444' }
+        ];
+
+        cards.forEach(card => {
+            const cardElement = document.getElementById(card.id);
+            if (cardElement) {
+                const countElement = cardElement.querySelector('.stat-number');
+                const iconElement = cardElement.querySelector('.stat-icon');
+                const textElement = cardElement.querySelector('.stat-text');
+
+                if (countElement) {
+                    countElement.textContent = totals[card.type] || '0';
                 }
-            },
-
-            // Обновление интерфейса
-            updateUI: function () {
-                if (!this.data || !this.data.series || this.data.series.length === 0) {
-                    console.warn('No data for operations chart');
-                    this.showError();
-                    return;
+                if (iconElement) {
+                    iconElement.textContent = card.icon;
+                    iconElement.style.color = card.color;
                 }
-
-                console.log('DEBUG: Updating operations UI with:', {
-                    seriesCount: this.data.series.length,
-                    labels: this.data.labels?.length || 0,
-                    total: this.data.total
-                });
-
-                // Считаем общие суммы для каждой категории
-                const totals = {};
-                this.data.series.forEach(series => {
-                    totals[series.name] = series.data.reduce((sum, d) => sum + (d.count || 0), 0);
-                });
-
-                // Обновляем мини-карточки
-                this.updateMiniCards(totals);
-
-                // Обновляем мини-график (группированные столбцы)
-                this.updateMiniChart();
-
-                // Обновляем полноэкранные данные
-                this.updateFullscreenUI(totals);
-            },
-
-            // Обновление мини-карточек с иконками
-            updateMiniCards: function (totals) {
-                const cards = [
-                    { id: 'operations-replenish-card', type: 'Пополнение', icon: '🔄', color: '#10B981' },
-                    { id: 'operations-collection-card', type: 'Инкассация', icon: '💵', color: '#F59E0B' },
-                    { id: 'operations-service-card', type: 'Обслуживание', icon: '🔧', color: '#EF4444' }
-                ];
-
-                cards.forEach(card => {
-                    const cardElement = document.getElementById(card.id);
-                    if (cardElement) {
-                        const countElement = cardElement.querySelector('.stat-number');
-                        const iconElement = cardElement.querySelector('.stat-icon');
-                        const textElement = cardElement.querySelector('.stat-text');
-
-                        if (countElement) {
-                            countElement.textContent = totals[card.type] || '0';
-                        }
-                        if (iconElement) {
-                            iconElement.textContent = card.icon;
-                            iconElement.style.color = card.color;
-                        }
-                        if (textElement) {
-                            textElement.textContent = card.type;
-                        }
-                    }
-                });
-
-                // Обновляем общий тотал
-                const totalElement = document.getElementById('operations-mini-total');
-                if (totalElement) {
-                    totalElement.textContent = this.data.total || '-';
-                }
-            },
-
-            // Мини-график с группированными столбцами
-            updateMiniChart: function () {
-                const canvas = document.getElementById('operations-mini-chart');
-                if (!canvas) {
-                    console.warn('Operations mini chart canvas not found');
-                    return;
-                }
-
-                const ctx = canvas.getContext('2d');
-
-                if (this.miniChart) this.miniChart.destroy();
-
-                if (!this.data.series || this.data.series.length === 0) {
-                    this.miniChart = new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'],
-                            datasets: [
-                                {
-                                    label: 'Пополнения',
-                                    data: [3, 2, 4, 5, 3, 2],
-                                    backgroundColor: '#10B981',
-                                    borderColor: '#10B981',
-                                    borderWidth: 1,
-                                    barPercentage: 0.6,
-                                    categoryPercentage: 0.8
-                                },
-                                {
-                                    label: 'Инкассации',
-                                    data: [2, 3, 1, 4, 2, 1],
-                                    backgroundColor: '#F59E0B',
-                                    borderColor: '#F59E0B',
-                                    borderWidth: 1,
-                                    barPercentage: 0.6,
-                                    categoryPercentage: 0.8
-                                },
-                                {
-                                    label: 'Обслуживания',
-                                    data: [1, 2, 1, 3, 1, 2],
-                                    backgroundColor: '#EF4444',
-                                    borderColor: '#EF4444',
-                                    borderWidth: 1,
-                                    barPercentage: 0.6,
-                                    categoryPercentage: 0.8
-                                }
-                            ]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { display: false },
-                                tooltip: {
-                                    enabled: false,
-                                    mode: 'index',
-                                    intersect: false
-                                }
-                            },
-                            scales: {
-                                x: {
-                                    display: false,
-                                    grid: { display: false }
-                                },
-                                y: {
-                                    display: false,
-                                    grid: { display: false },
-                                    beginAtZero: true
-                                }
-                            }
-                        }
-                    });
-                    return;
-                }
-
-                // Для мини-графика берем только последние 7 дней
-                const labels = this.data.labels || [];
-                const series = this.data.series;
-
-                // Определяем индексы последних 7 точек
-                const startIndex = Math.max(0, labels.length - 7);
-                const miniLabels = labels.slice(startIndex);
-
-                const datasets = series.map(s => {
-                    const data = s.data || [];
-                    const miniData = data.slice(startIndex).map(d => d.count || 0);
-
-                    return {
-                        label: s.name,
-                        data: miniData,
-                        backgroundColor: s.color + 'CC',
-                        borderColor: s.color,
-                        borderWidth: 1,
-                        barPercentage: 0.6,
-                        categoryPercentage: 0.8
-                    };
-                });
-
-                this.miniChart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: miniLabels,
-                        datasets: datasets
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: {
-                                enabled: true,
-                                mode: 'index',
-                                intersect: false,
-                                callbacks: {
-                                    label: function (context) {
-                                        return `${context.dataset.label}: ${context.parsed.y} операций`;
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            x: {
-                                display: false,
-                                grid: { display: false },
-                                stacked: false
-                            },
-                            y: {
-                                display: false,
-                                grid: { display: false },
-                                beginAtZero: true,
-                                stacked: false
-                            }
-                        },
-                        interaction: {
-                            mode: 'index',
-                            intersect: false
-                        }
-                    }
-                });
-            },
-
-            // Обновление полноэкранного интерфейса
-            updateFullscreenUI: function (totals) {
-                // Обновляем карточки в полноэкранном режиме
-                const categories = [
-                    { id: 'operations-full-replenish', type: 'Пополнение', color: '#10B981' },
-                    { id: 'operations-full-collection', type: 'Инкассация', color: '#F59E0B' },
-                    { id: 'operations-full-service', type: 'Обслуживание', color: '#EF4444' }
-                ];
-
-                categories.forEach(cat => {
-                    const element = document.getElementById(cat.id);
-                    if (element) {
-                        element.textContent = totals[cat.type] || '0';
-                        element.style.color = cat.color;
-                    }
-                });
-
-                // Общий тотал
-                const fullTotal = document.getElementById('operations-full-total');
-                if (fullTotal) {
-                    fullTotal.textContent = this.data.total || '-';
-                }
-
-                const periodElement = document.getElementById('operations-full-period');
-                if (periodElement) {
-                    periodElement.textContent = this.data.period || '30 дней';
-                }
-
-                const changeElement = document.getElementById('operations-full-change');
-                if (changeElement) {
-                    const change = this.data.change || 0;
-                    const changeText = change >= 0 ? `+${change}` : change;
-                    changeElement.textContent = changeText;
-                    changeElement.className = `stat-value ${change >= 0 ? 'positive' : 'negative'}`;
-                }
-
-                const trendElement = document.getElementById('operations-full-trend');
-                if (trendElement) {
-                    const trend = this.data.trend || 0;
-                    const trendInfo = this.getTrendInfo(trend);
-                    trendElement.innerHTML = `${trendInfo.icon} ${trendInfo.text}`;
-                    trendElement.className = `stat-trend ${trendInfo.class}`;
-                }
-
-                const infoElement = document.getElementById('operations-data-info');
-                if (infoElement) {
-                    infoElement.textContent =
-                        `Данные за ${this.data.period || '30 дней'} • Обновлено: ${new Date().toLocaleTimeString('ru-RU')}`;
-                }
-            },
-
-            // Полноэкранный график с группированными столбцами
-            updateFullChart: function () {
-                const canvas = document.getElementById('operations-full-chart');
-                if (!canvas || !this.data || !this.data.series || this.data.series.length === 0) {
-                    console.warn('Cannot update operations full chart - missing data or canvas');
-                    return;
-                }
-
-                const ctx = canvas.getContext('2d');
-                const labels = this.data.labels || [];
-
-                if (this.fullChart) this.fullChart.destroy();
-
-                // Подготавливаем данные для группированных столбцов
-                const datasets = this.data.series.map(series => {
-                    const data = series.data || [];
-                    const counts = data.map(d => d.count || 0);
-                    const dates = data.map(d => d.date || '');
-
-                    return {
-                        label: series.name,
-                        data: counts,
-                        backgroundColor: series.color + 'CC',
-                        borderColor: series.color,
-                        borderWidth: 1,
-                        dates: dates
-                    };
-                });
-
-                this.fullChart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: datasets
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: true,
-                                position: 'top',
-                                labels: {
-                                    padding: 20,
-                                    usePointStyle: true,
-                                    pointStyle: 'rect',
-                                    font: {
-                                        size: 14
-                                    }
-                                }
-                            },
-                            tooltip: {
-                                mode: 'index',
-                                intersect: false,
-                                callbacks: {
-                                    title: function (context) {
-                                        const date = context[0].dataset.dates?.[context[0].dataIndex] || '';
-                                        return date || `День ${context[0].label}`;
-                                    },
-                                    label: function (context) {
-                                        return `${context.dataset.label}: ${context.parsed.y} операций`;
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            x: {
-                                grid: {
-                                    display: false
-                                },
-                                ticks: {
-                                    maxTicksLimit: 15,
-                                    font: {
-                                        size: 11
-                                    }
-                                },
-                                stacked: false
-                            },
-                            y: {
-                                beginAtZero: true,
-                                grid: {
-                                    color: 'rgba(0,0,0,0.05)'
-                                },
-                                ticks: {
-                                    font: {
-                                        size: 12
-                                    },
-                                    callback: function (value) {
-                                        return value;
-                                    },
-                                    stepSize: 1
-                                },
-                                stacked: false
-                            }
-                        },
-                        interaction: {
-                            mode: 'index',
-                            intersect: false
-                        },
-                        barPercentage: 0.8,
-                        categoryPercentage: 0.9
-                    }
-                });
-            },
-
-            // Альтернатива: сложенный (stacked) bar chart
-            updateStackedFullChart: function () {
-                const canvas = document.getElementById('operations-full-chart');
-                if (!canvas || !this.data || !this.data.series || this.data.series.length === 0) {
-                    console.warn('Cannot update operations full chart - missing data or canvas');
-                    return;
-                }
-
-                const ctx = canvas.getContext('2d');
-                const labels = this.data.labels || [];
-
-                if (this.fullChart) this.fullChart.destroy();
-
-                // Для stacked chart используем полупрозрачные цвета
-                const datasets = this.data.series.map(series => {
-                    const data = series.data || [];
-                    const counts = data.map(d => d.count || 0);
-                    const dates = data.map(d => d.date || '');
-
-                    return {
-                        label: series.name,
-                        data: counts,
-                        backgroundColor: series.color + '99', // Более прозрачный для stacked
-                        borderColor: series.color,
-                        borderWidth: 0,
-                        dates: dates
-                    };
-                });
-
-                this.fullChart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: datasets
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: true,
-                                position: 'top',
-                                labels: {
-                                    padding: 20,
-                                    usePointStyle: true,
-                                    pointStyle: 'rect',
-                                    font: {
-                                        size: 14
-                                    }
-                                }
-                            },
-                            tooltip: {
-                                mode: 'index',
-                                intersect: false,
-                                callbacks: {
-                                    title: function (context) {
-                                        const date = context[0].dataset.dates?.[context[0].dataIndex] || '';
-                                        return date || `День ${context[0].label}`;
-                                    },
-                                    label: function (context) {
-                                        return `${context.dataset.label}: ${context.parsed.y} операций`;
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            x: {
-                                grid: {
-                                    display: false
-                                },
-                                ticks: {
-                                    maxTicksLimit: 15,
-                                    font: {
-                                        size: 11
-                                    }
-                                },
-                                stacked: true
-                            },
-                            y: {
-                                beginAtZero: true,
-                                grid: {
-                                    color: 'rgba(0,0,0,0.05)'
-                                },
-                                ticks: {
-                                    font: {
-                                        size: 12
-                                    },
-                                    callback: function (value) {
-                                        return value;
-                                    },
-                                    stepSize: 1
-                                },
-                                stacked: true
-                            }
-                        },
-                        interaction: {
-                            mode: 'index',
-                            intersect: false
-                        }
-                    }
-                });
-            },
-
-            // Разворачивание/сворачивание с возможностью выбора типа графика
-            expand: function (chartType = 'grouped') {
-                const fullscreen = document.getElementById('operations-chart-fullscreen');
-                if (fullscreen) {
-                    fullscreen.style.display = 'block';
-                    document.body.style.overflow = 'hidden';
-
-                    setTimeout(() => {
-                        if (chartType === 'stacked') {
-                            this.updateStackedFullChart();
-                        } else {
-                            this.updateFullChart();
-                        }
-                    }, 100);
-                }
-            },
-
-            collapse: function () {
-                const fullscreen = document.getElementById('operations-chart-fullscreen');
-                if (fullscreen) {
-                    fullscreen.style.display = 'none';
-                    document.body.style.overflow = 'auto';
-                }
-            },
-
-            // Переключение между типами графиков в полноэкранном режиме
-            toggleChartType: function () {
-                const toggleBtn = document.getElementById('operations-chart-toggle');
-                if (!toggleBtn) return;
-
-                const currentType = toggleBtn.dataset.type || 'grouped';
-                const newType = currentType === 'grouped' ? 'stacked' : 'grouped';
-
-                toggleBtn.dataset.type = newType;
-                toggleBtn.innerHTML = newType === 'stacked' ?
-                    '<i class="icon-layers"></i> Сгруппировать' :
-                    '<i class="icon-stack"></i> Сложить';
-
-                if (this.fullChart) {
-                    this.fullChart.destroy();
-                    if (newType === 'stacked') {
-                        this.updateStackedFullChart();
-                    } else {
-                        this.updateFullChart();
-                    }
-                }
-            },
-
-            // Вспомогательные функции
-            getTrendInfo: function (trend) {
-                if (trend === 1) return { class: 'up', icon: '📈', text: 'Рост' };
-                if (trend === -1) return { class: 'down', icon: '📉', text: 'Спад' };
-                return { class: 'stable', icon: '➡️', text: 'Стабильно' };
-            },
-
-            refresh: function () {
-                console.log('Refreshing operations chart...');
-                if (this.miniChart) this.miniChart.destroy();
-                if (this.fullChart) this.fullChart.destroy();
-                this.load();
-            },
-
-            showError: function () {
-                const elem = document.getElementById('operations-mini-total');
-                if (elem) {
-                    elem.textContent = 'Ошибка';
-                    elem.style.color = 'var(--danger)';
+                if (textElement) {
+                    textElement.textContent = card.type;
                 }
             }
-        },
+        });
+
+        // Обновляем общий тотал
+        const totalElement = document.getElementById('operations-mini-total');
+        if (totalElement) {
+            totalElement.textContent = this.data.total || '-';
+        }
+    },
+
+    // Мини-график - stacked bar chart за месяц (без легенды)
+    updateMiniChart: function () {
+        const canvas = document.getElementById('operations-mini-chart');
+        if (!canvas) {
+            console.warn('Operations mini chart canvas not found');
+            return;
+        }
+
+        const ctx = canvas.getContext('2d');
+
+        if (this.miniChart) this.miniChart.destroy();
+
+        if (!this.data.series || this.data.series.length === 0) {
+            // Демо-данные для stacked chart (месяц)
+            const monthDays = this.getMonthDays();
+            this.miniChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: monthDays.days,
+                    datasets: [
+                        {
+                            label: 'Пополнения',
+                            data: Array(30).fill().map(() => Math.floor(Math.random() * 5) + 1),
+                            backgroundColor: '#10B981',
+                            borderWidth: 0
+                        },
+                        {
+                            label: 'Инкассации',
+                            data: Array(30).fill().map(() => Math.floor(Math.random() * 3) + 1),
+                            backgroundColor: '#F59E0B',
+                            borderWidth: 0
+                        },
+                        {
+                            label: 'Обслуживания',
+                            data: Array(30).fill().map(() => Math.floor(Math.random() * 2) + 1),
+                            backgroundColor: '#EF4444',
+                            borderWidth: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { 
+                            display: false // Легенда полностью отключена
+                        },
+                        tooltip: {
+                            enabled: true,
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                title: function (context) {
+                                    // Показываем дату в формате "ДД Месяц"
+                                    const day = context[0].dataIndex + 1;
+                                    const monthNames = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+                                                       'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+                                    const now = new Date();
+                                    return `${day} ${monthNames[now.getMonth()]}`;
+                                },
+                                label: function (context) {
+                                    return `${context.dataset.label}: ${context.parsed.y} операций`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            grid: { display: false },
+                            stacked: true,
+                            ticks: {
+                                maxTicksLimit: 10,
+                                font: {
+                                    size: 8
+                                },
+                                // Показываем каждую 5-ю дату
+                                callback: function(value, index) {
+                                    return (index % 5 === 0) ? (index + 1) : '';
+                                }
+                            }
+                        },
+                        y: {
+                            display: false,
+                            grid: { display: false },
+                            beginAtZero: true,
+                            stacked: true
+                        }
+                    },
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    }
+                }
+            });
+            return;
+        }
+
+        // Для мини-графика берем последние 30 дней (месяц)
+        const labels = this.data.labels || [];
+        const series = this.data.series;
+        const dates = this.data.series[0]?.data?.map(d => d.date) || [];
+
+        // Берем последние 30 дней или все, если меньше
+        const startIndex = Math.max(0, labels.length - 30);
+        const monthLabels = labels.slice(startIndex);
+        const monthDates = dates.slice(startIndex);
+
+        // Подготавливаем датасеты для месяца
+        const datasets = series.map(s => {
+            const data = s.data || [];
+            const monthData = data.slice(startIndex).map(d => d.count || 0);
+
+            return {
+                label: s.name,
+                data: monthData,
+                backgroundColor: s.color + 'CC',
+                borderWidth: 0,
+                dates: monthDates // Сохраняем даты для тултипа
+            };
+        });
+
+        this.miniChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: monthLabels.map((label, index) => {
+                    // Форматируем метки как числа дней
+                    return "";
+                }),
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { 
+                        display: false // Легенда полностью отключена
+                    },
+                    tooltip: {
+                        enabled: true,
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: {
+                            title: function (context) {
+                                // Получаем дату из датасета
+                                const dateStr = context[0].dataset.dates?.[context[0].dataIndex];
+                                if (dateStr) {
+                                    try {
+                                        const date = new Date(dateStr);
+                                        const day = date.getDate();
+                                        const monthNames = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+                                                           'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+                                        const month = monthNames[date.getMonth()];
+                                        const year = date.getFullYear();
+                                        
+                                        // Если год текущий, не показываем его
+                                        const currentYear = new Date().getFullYear();
+                                        if (year === currentYear) {
+                                            return `${day} ${month}`;
+                                        }
+                                        return `${day} ${month} ${year}`;
+                                    } catch (e) {
+                                        return `День ${context[0].label}`;
+                                    }
+                                }
+                                return `День ${context[0].label}`;
+                            },
+                            label: function (context) {
+                                return `${context.dataset.label}: ${context.parsed.y} операций`;
+                            },
+                            afterLabel: function (context) {
+                                // Показываем процент от общей суммы за день
+                                const dayTotal = context.chart.data.datasets
+                                    .map(ds => ds.data[context.dataIndex])
+                                    .reduce((a, b) => a + b, 0);
+                                
+                                if (dayTotal > 0 && context.parsed.y > 0) {
+                                    const percentage = Math.round((context.parsed.y / dayTotal) * 100);
+                                    return `(${percentage}% от общего количества за день)`;
+                                }
+                                return '';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        display: true,
+                        grid: { 
+                            display: false 
+                        },
+                        stacked: true,
+                        ticks: {
+                            maxTicksLimit: 10,
+                            font: {
+                                size: 9
+                            },
+                            // Показываем каждую 5-ю дату для лучшей читаемости
+                            callback: function(value, index) {
+                                return (index % 5 === 0) ? this.getLabelForValue(value) : '';
+                            }
+                        },
+                        title: {
+                            display: false,
+                            text: 'Дни месяца',
+                            font: {
+                                size: 10
+                            }
+                        }
+                    },
+                    y: {
+                        display: false,
+                        grid: { display: false },
+                        beginAtZero: true,
+                        stacked: true
+                    }
+                },
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                }
+            }
+        });
+    },
+
+    // Вспомогательная функция для получения дней месяца
+    getMonthDays: function() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        
+        const days = [];
+        const monthNames = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 
+                           'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'];
+        
+        for (let i = 1; i <= daysInMonth; i++) {
+            if (i % 5 === 0 || i === 1 || i === daysInMonth) {
+                days.push(`${i} ${monthNames[month]}`);
+            } else {
+                days.push(i.toString());
+            }
+        }
+        
+        return {
+            days: days,
+            count: daysInMonth
+        };
+    },
+
+    // Обновление полноэкранного интерфейса
+    updateFullscreenUI: function (totals) {
+        // Обновляем карточки в полноэкранном режиме
+        const categories = [
+            { id: 'operations-full-replenish', type: 'Пополнение', color: '#10B981' },
+            { id: 'operations-full-collection', type: 'Инкассация', color: '#F59E0B' },
+            { id: 'operations-full-service', type: 'Обслуживание', color: '#EF4444' }
+        ];
+
+        categories.forEach(cat => {
+            const element = document.getElementById(cat.id);
+            if (element) {
+                element.textContent = totals[cat.type] || '0';
+                element.style.color = cat.color;
+            }
+        });
+
+        // Общий тотал
+        const fullTotal = document.getElementById('operations-full-total');
+        if (fullTotal) {
+            fullTotal.textContent = this.data.total || '-';
+        }
+
+        const periodElement = document.getElementById('operations-full-period');
+        if (periodElement) {
+            periodElement.textContent = this.data.period || '30 дней';
+        }
+
+        const changeElement = document.getElementById('operations-full-change');
+        if (changeElement) {
+            const change = this.data.change || 0;
+            const changeText = change >= 0 ? `+${change}` : change;
+            changeElement.textContent = changeText;
+            changeElement.className = `stat-value ${change >= 0 ? 'positive' : 'negative'}`;
+        }
+
+        const trendElement = document.getElementById('operations-full-trend');
+        if (trendElement) {
+            const trend = this.data.trend || 0;
+            const trendInfo = this.getTrendInfo(trend);
+            trendElement.innerHTML = `${trendInfo.icon} ${trendInfo.text}`;
+            trendElement.className = `stat-trend ${trendInfo.class}`;
+        }
+
+        const infoElement = document.getElementById('operations-data-info');
+        if (infoElement) {
+            infoElement.textContent =
+                `Данные за ${this.data.period || '30 дней'} • Обновлено: ${new Date().toLocaleTimeString('ru-RU')}`;
+        }
+    },
+
+    // Полноэкранный график - stacked bar chart (с легендой)
+    updateFullChart: function () {
+        const canvas = document.getElementById('operations-full-chart');
+        if (!canvas || !this.data || !this.data.series || this.data.series.length === 0) {
+            console.warn('Cannot update operations full chart - missing data or canvas');
+            return;
+        }
+
+        const ctx = canvas.getContext('2d');
+        const labels = this.data.labels || [];
+        const dates = this.data.series[0]?.data?.map(d => d.date) || [];
+
+        if (this.fullChart) this.fullChart.destroy();
+
+        // Подготавливаем данные для stacked bar chart
+        const datasets = this.data.series.map(series => {
+            const data = series.data || [];
+            const counts = data.map(d => d.count || 0);
+
+            return {
+                label: series.name,
+                data: counts,
+                backgroundColor: series.color + '99',
+                borderColor: series.color,
+                borderWidth: 0,
+                dates: dates // Сохраняем даты для тултипа
+            };
+        });
+
+        this.fullChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true, // Легенда включена только в полноэкранном режиме
+                        position: 'top',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true,
+                            pointStyle: 'rect',
+                            font: {
+                                size: 14
+                            }
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: {
+                            title: function (context) {
+                                // Показываем полную дату в тултипе
+                                const dateStr = context[0].dataset.dates?.[context[0].dataIndex];
+                                if (dateStr) {
+                                    try {
+                                        const date = new Date(dateStr);
+                                        return date.toLocaleDateString('ru-RU', {
+                                            day: 'numeric',
+                                            month: 'long',
+                                            year: 'numeric'
+                                        });
+                                    } catch (e) {
+                                        return `День ${context[0].label}`;
+                                    }
+                                }
+                                return `День ${context[0].label}`;
+                            },
+                            label: function (context) {
+                                return `${context.dataset.label}: ${context.parsed.y} операций`;
+                            },
+                            afterLabel: function (context) {
+                                // Показываем процент от общей суммы за день
+                                const dayTotal = context.chart.data.datasets
+                                    .map(ds => ds.data[context.dataIndex])
+                                    .reduce((a, b) => a + b, 0);
+                                
+                                if (dayTotal > 0) {
+                                    const percentage = Math.round((context.parsed.y / dayTotal) * 100);
+                                    return `(${percentage}% от общего количества за день)`;
+                                }
+                                return '';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            maxTicksLimit: 15,
+                            font: {
+                                size: 11
+                            }
+                        },
+                        stacked: true
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0,0,0,0.05)'
+                        },
+                        ticks: {
+                            font: {
+                                size: 12
+                            },
+                            callback: function (value) {
+                                return value;
+                            },
+                            stepSize: 1
+                        },
+                        stacked: true
+                    }
+                },
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                barPercentage: 0.8,
+                categoryPercentage: 1.0
+            }
+        });
+    },
+
+    // Разворачивание полноэкранного режима
+    expand: function () {
+        const fullscreen = document.getElementById('operations-chart-fullscreen');
+        if (fullscreen) {
+            fullscreen.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+
+            setTimeout(() => {
+                this.updateFullChart();
+            }, 100);
+        }
+    },
+
+    collapse: function () {
+        const fullscreen = document.getElementById('operations-chart-fullscreen');
+        if (fullscreen) {
+            fullscreen.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+    },
+
+    // Вспомогательные функции
+    getTrendInfo: function (trend) {
+        if (trend === 1) return { class: 'up', icon: '📈', text: 'Рост' };
+        if (trend === -1) return { class: 'down', icon: '📉', text: 'Спад' };
+        return { class: 'stable', icon: '➡️', text: 'Стабильно' };
+    },
+
+    refresh: function () {
+        console.log('Refreshing operations chart...');
+        if (this.miniChart) this.miniChart.destroy();
+        if (this.fullChart) this.fullChart.destroy();
+        this.load();
+    },
+
+    showError: function () {
+        const elem = document.getElementById('operations-mini-total');
+        if (elem) {
+            elem.textContent = 'Ошибка';
+            elem.style.color = 'var(--danger)';
+        }
+    }
+},
 
         // Initialize all charts
         init: function () {
